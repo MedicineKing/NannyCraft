@@ -14,10 +14,11 @@ public sealed class VersionEntry
     public bool IsRelease => Type == "release";
     public string DisplayType => Type switch
     {
-        "release" => "正式版",
-        "snapshot" => "快照",
-        "old_beta" => "旧 Beta",
-        "old_alpha" => "旧 Alpha",
+        "release" => Services.Loc.T("S_TypeRelease"),
+        "snapshot" => Services.Loc.T("S_TypeSnapshot"),
+        "old_beta" => Services.Loc.T("S_TypeOldBeta"),
+        "old_alpha" => Services.Loc.T("S_TypeOldAlpha"),
+        "local" => Services.Loc.T("S_TypeLocal"),
         _ => Type,
     };
 }
@@ -133,12 +134,12 @@ public sealed class JavaRuntime
 
     public string SourceText => Source switch
     {
-        JavaSource.JavaHome => "JAVA_HOME",
-        JavaSource.Registry => "注册表",
-        JavaSource.CommonDir => "安装目录",
-        JavaSource.Path => "PATH",
-        JavaSource.Bundled => "内置",
-        _ => "未知",
+        JavaSource.JavaHome => Services.Loc.T("S_SrcJavaHome"),
+        JavaSource.Registry => Services.Loc.T("S_SrcRegistry"),
+        JavaSource.CommonDir => Services.Loc.T("S_SrcCommonDir"),
+        JavaSource.Path => Services.Loc.T("S_SrcPath"),
+        JavaSource.Bundled => Services.Loc.T("S_SrcBundled"),
+        _ => "?",
     };
 }
 

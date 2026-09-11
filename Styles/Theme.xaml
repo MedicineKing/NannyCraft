@@ -107,38 +107,6 @@
         </Style.Triggers>
     </Style>
 
-    <!-- ══════════ 版本类型筛选胶囊(下载页):未选=灰底描边,选中=强调色填充 ══════════ -->
-    <Style x:Key="FilterChip" TargetType="RadioButton">
-        <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}"/>
-        <Setter Property="FontSize" Value="12.5"/>
-        <Setter Property="Cursor" Value="Hand"/>
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="RadioButton">
-                    <Grid RenderOptions.ClearTypeHint="Enabled">
-                        <Border x:Name="bg" CornerRadius="14" BorderThickness="1" Padding="14,5"
-                                Background="{DynamicResource SubtleFillColorTertiaryBrush}"
-                                BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"/>
-                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                    </Grid>
-                    <ControlTemplate.Triggers>
-                        <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="bg" Property="Background"
-                                    Value="{DynamicResource SubtleFillColorSecondaryBrush}"/>
-                        </Trigger>
-                        <Trigger Property="IsChecked" Value="True">
-                            <Setter TargetName="bg" Property="Background"
-                                    Value="{DynamicResource AccentFillColorDefaultBrush}"/>
-                            <Setter TargetName="bg" Property="BorderBrush" Value="Transparent"/>
-                            <Setter Property="Foreground" Value="{DynamicResource TextOnAccentFillColorPrimaryBrush}"/>
-                            <Setter Property="FontWeight" Value="SemiBold"/>
-                        </Trigger>
-                    </ControlTemplate.Triggers>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-    </Style>
-
     <!-- ══════════ 版本类型标签:正式版=强调色,快照=琥珀,其他=灰 ══════════ -->
     <Style x:Key="TypeChip" TargetType="Border">
         <Setter Property="CornerRadius" Value="4"/>

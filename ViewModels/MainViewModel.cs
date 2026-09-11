@@ -22,6 +22,7 @@ public partial class MainViewModel : ObservableObject
     private readonly InstallService _install = new();
     private readonly UpdateService _update = new();
     private readonly NewsService _news = new();
+    private readonly JdkService _jdk = new();
     private LauncherSettings _settings = new();
 
     private List<VersionEntry> _allVersions = new();
@@ -31,6 +32,10 @@ public partial class MainViewModel : ObservableObject
     /// 主页列表:仅本机已安装(versions/<id>/<id>.jar 存在)的版本
     public ObservableCollection<VersionEntry> InstalledVersions { get; } = new();
 
+    /// 版本同步维护表:参与同步(共享游戏目录)/ 已隔离(独立目录,不参与同步)
+    public ObservableCollection<VersionEntry> SyncedVersions { get; } = new();
+    public ObservableCollection<VersionEntry> IsolatedVersionEntries { get; } = new();
+
     public ObservableCollection<JavaRuntime> Javas { get; } = new();
 
     // ── 导航 ──
@@ -39,15 +44,78 @@ public partial class MainViewModel : ObservableObject
 
     partial void OnCurrentPageChanged(AppPage value)
     {
-        PageTitle = value switch
-        {
-            AppPage.Home => "主页",
-            AppPage.Download => "下载",
-            AppPage.Settings => "设置",
-            _ => "关于",
-        };
+        RefreshPageTitle();
         if (value == AppPage.Home)
             RefreshInstalled(); // 回主页时刷新本机已安装列表
+    }
+
+    private void RefreshPageTitle() => PageTitle = CurrentPage switch
+    {
+        AppPage.Download => Loc.T("S_NavDownload"),
+        AppPage.Settings => Loc.T("S_NavSettings"),
+        AppPage.About => Loc.T("S_NavAbout"),
+        _ => Loc.T("S_NavHome"),
+    };
+
+    // ── 设置 · 启动器语言 ──
+    public IReadOnlyList<LanguageOption> LauncherLanguages { get; } =
+        Loc.Languages.Select(l => new LanguageOption(l.Code, l.Name)).ToList();
+
+    [ObservableProperty] private LanguageOption? _selectedLanguage;
+
+    partial void OnSelectedLanguageChanged(LanguageOption? value)
+    {
+        if (value == null) return;
+        _settings.LauncherLanguage = value.Code;
+        SettingsStore.Save(_settings);
+        Loc.Apply(value.Code);
+        RefreshPageTitle();
+        OnPropertyChanged(nameof(HeroTitle));
+        RefreshLocalizedLists(); // 预设列表/模型文案(通道/速度/Java 来源/版本类型)重建刷新
+        LauncherIdText = $"{Loc.T("S_LauncherIdPrefix")}: {LauncherId}";
+        if (_settings.GameLanguageFollows) SyncGameLanguage(); // 实时跟随:界面上改语言,游戏也跟着改
+    }
+
+    /// 把启动器语言写进共享目录 options.txt(仅"跟随启动器"且非隔离版本;大小写风格沿用原文件)
+    private void SyncGameLanguage()
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(GameRoot)) return;
+            var file = new GameOptionsFile(Path.Combine(GameRoot, "options.txt"));
+            var code = Loc.MinecraftLangCode;
+            var old = file.Get("lang") ?? "";
+            var value = old.Length > 0 && old == old.ToLowerInvariant() ? code.ToLowerInvariant() : code;
+            if (old == value) return;
+            file.Set("lang", value);
+            file.Save();
+            LogService.Info($"游戏语言已跟随启动器:{value}");
+        }
+        catch (Exception ex)
+        {
+            LogService.Warn("写入游戏语言失败:" + ex.Message);
+        }
+    }
+
+    // ── 版本隔离:名单内版本用独立游戏目录(versions/<id>),不参与同步 ──
+
+    public bool IsIsolated(string versionId) =>
+        _settings.IsolatedVersions.Any(v => string.Equals(v, versionId, StringComparison.OrdinalIgnoreCase));
+
+    public string EffectiveGameDir(string versionId) =>
+        !string.IsNullOrWhiteSpace(versionId) && IsIsolated(versionId)
+            ? Path.Combine(GameRoot, "versions", versionId)
+            : GameRoot;
+
+    public void SetIsolated(string versionId, bool isolated)
+    {
+        var exists = IsIsolated(versionId);
+        if (isolated && !exists) _settings.IsolatedVersions.Add(versionId);
+        if (!isolated && exists)
+            _settings.IsolatedVersions.RemoveAll(v => string.Equals(v, versionId, StringComparison.OrdinalIgnoreCase));
+        SettingsStore.Save(_settings);
+        LogService.Info($"{(isolated ? "启用" : "关闭")}版本隔离:{versionId}");
+        RefreshCheck();
     }
 
     // ── 主页 / 下载 ──
@@ -100,6 +168,9 @@ public partial class MainViewModel : ObservableObject
     // ── 主页空状态 ──
     [ObservableProperty] private bool _showEmptyState;
 
+    /// 主页 Hero 标题:未选版本时显示本地化占位(TargetNullValue 吃不了动态资源,走 VM 计算)
+    public string HeroTitle => SelectedVersion?.Id ?? Loc.T("S_NoVersionSelected");
+
     // ── 主页 · 详情面板(未选版本时:快讯 / 提示) ──
     public ObservableCollection<NewsItem> News { get; } = new();
     [ObservableProperty] private bool _hasSelectedVersion;
@@ -112,6 +183,52 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty] private bool _newsTranslate = true;
     [ObservableProperty] private string _feedbackRepo = "";
     [ObservableProperty] private string _launcherIdText = "";
+    public string LauncherId { get; private set; } = "";
+
+    // ── 内置 Java 运行时 ──
+    [ObservableProperty] private bool _needsJavaDownload;
+    [ObservableProperty] private string _javaDownloadText = "";
+    [ObservableProperty] private bool _useTunaJdkMirror;
+
+    partial void OnUseTunaJdkMirrorChanged(bool value)
+    {
+        _settings.UseTunaJdkMirror = value;
+        SettingsStore.Save(_settings);
+    }
+
+    [RelayCommand]
+    private async Task DownloadJavaAsync()
+    {
+        var version = SelectedDetail?.JavaVersion is { MajorVersion: > 0 } hint ? hint.MajorVersion : 21;
+        IsBusy = true;
+        ShowProgress = true;
+        Progress = 0;
+        try
+        {
+            StatusText = Loc.F("S_Msg_JavaDownloading", version);
+            var reporter = new Progress<double>(p => Progress = p * 100);
+            var javaExe = await _jdk.EnsureAsync(version, UseTunaJdkMirror, reporter);
+            if (javaExe == null)
+            {
+                StatusText = Loc.F("S_Msg_JavaFailed", version);
+                return;
+            }
+            StatusText = Loc.F("S_Msg_JavaReady", version, javaExe);
+            ScanJava();
+            SelectedJava = Javas.FirstOrDefault(j => j.Version >= version) ?? SelectedJava;
+            RefreshCheck();
+        }
+        catch (Exception ex)
+        {
+            StatusText = "Java 下载失败:" + ex.Message;
+            LogService.Error($"下载 Java {version} 失败", ex);
+        }
+        finally
+        {
+            ShowProgress = false;
+            IsBusy = false;
+        }
+    }
 
     // ── 关于 · 帮助与反馈 ──
 
@@ -145,7 +262,7 @@ public partial class MainViewModel : ObservableObject
         try
         {
             var javaText = SelectedJava != null ? $"Java {SelectedJava.Version}({SelectedJava.Home})" : "未探测到";
-            var url = FeedbackService.BuildIssueUrl(repo, kind, _settings.LauncherId, javaText);
+            var url = FeedbackService.BuildIssueUrl(repo, kind, LauncherId, javaText);
             System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(url) { UseShellExecute = true });
             LogService.Info($"打开反馈页({kind})");
             StatusText = "已在浏览器打开 GitHub 反馈页(环境信息与日志已自动填充,提交前可编辑)";
@@ -198,15 +315,7 @@ public partial class MainViewModel : ObservableObject
 
     // ── 设置 · 动画速度 ──
 
-    public IReadOnlyList<AnimationSpeedOption> AnimationSpeeds { get; } = new[]
-    {
-        new AnimationSpeedOption("0.5× 舒缓", 0.5),
-        new AnimationSpeedOption("0.75× 偏慢", 0.75),
-        new AnimationSpeedOption("1× 标准", 1.0),
-        new AnimationSpeedOption("1.25× 偏快", 1.25),
-        new AnimationSpeedOption("1.5× 轻快", 1.5),
-        new AnimationSpeedOption("2× 迅捷", 2.0),
-    };
+    public ObservableCollection<AnimationSpeedOption> AnimationSpeeds { get; } = new();
 
     [ObservableProperty] private AnimationSpeedOption? _selectedAnimationSpeed;
 
@@ -218,13 +327,33 @@ public partial class MainViewModel : ObservableObject
         SettingsStore.Save(_settings);
     }
 
-    public IReadOnlyList<UpdateChannelOption> Channels { get; } = new[]
+    public ObservableCollection<UpdateChannelOption> Channels { get; } = new();
+
+    /// 通道/速度这类"预设列表"的名称要随语言重建(XAML 里通过 ItemTemplate 绑定 Name)
+    private void RefreshLocalizedLists()
     {
-        new UpdateChannelOption(UpdateChannel.Release, "正式版"),
-        new UpdateChannelOption(UpdateChannel.Beta, "Beta 内测"),
-        new UpdateChannelOption(UpdateChannel.Alpha, "Alpha 内测"),
-        new UpdateChannelOption(UpdateChannel.Dev, "Dev 内测"),
-    };
+        var channel = SelectedChannel?.Channel ?? UpdateChannel.Release;
+        Channels.Clear();
+        Channels.Add(new UpdateChannelOption(UpdateChannel.Release, "S_ChRelease"));
+        Channels.Add(new UpdateChannelOption(UpdateChannel.Beta, "S_ChBeta"));
+        Channels.Add(new UpdateChannelOption(UpdateChannel.Alpha, "S_ChAlpha"));
+        Channels.Add(new UpdateChannelOption(UpdateChannel.Dev, "S_ChDev"));
+        SelectedChannel = Channels.First(c => c.Channel == channel);
+
+        var speed = SelectedAnimationSpeed?.Value ?? 1.0;
+        AnimationSpeeds.Clear();
+        AnimationSpeeds.Add(new AnimationSpeedOption("S_AS05", 0.5));
+        AnimationSpeeds.Add(new AnimationSpeedOption("S_AS075", 0.75));
+        AnimationSpeeds.Add(new AnimationSpeedOption("S_AS1", 1.0));
+        AnimationSpeeds.Add(new AnimationSpeedOption("S_AS125", 1.25));
+        AnimationSpeeds.Add(new AnimationSpeedOption("S_AS15", 1.5));
+        AnimationSpeeds.Add(new AnimationSpeedOption("S_AS2", 2.0));
+        SelectedAnimationSpeed = AnimationSpeeds.FirstOrDefault(a => Math.Abs(a.Value - speed) < 0.01) ?? AnimationSpeeds[2];
+
+        ScanJava();        // Java 来源文案("内置/注册表…")是模型计算属性 → 重建列表刷新
+        ApplyFilter();     // 版本列表的类型标签同理
+        RefreshInstalled();
+    }
 
     partial void OnSelectedChannelChanged(UpdateChannelOption? value)
     {
@@ -338,7 +467,7 @@ public partial class MainViewModel : ObservableObject
     public async Task LoadAsync()
     {
         IsBusy = true;
-        StatusText = "正在拉取 Mojang 版本清单…";
+        StatusText = Loc.T("S_Msg_PullingManifest");
         try
         {
             _settings = SettingsStore.Load();
@@ -349,6 +478,8 @@ public partial class MainViewModel : ObservableObject
             AutoConcurrency = _settings.DownloadConcurrency <= 0; // 0 = 自动
             DownloadConcurrency = Math.Clamp(_settings.DownloadConcurrency <= 0 ? 256 : _settings.DownloadConcurrency, 16, 1024);
             InstallDate = _settings.InstallDate;
+
+            RefreshLocalizedLists(); // 先建好通道/速度预设列表(空列表取 First 会崩)
             SelectedChannel = Channels.FirstOrDefault(c => c.Channel.ToString() == _settings.UpdateChannel) ?? Channels[0];
 
             BackgroundImage = _settings.BackgroundImage;
@@ -364,16 +495,23 @@ public partial class MainViewModel : ObservableObject
             _allVersions = (await _manifest.GetVersionsAsync()).ToList();
             ApplyFilter();
 
-            StatusText = $"就绪 · {_allVersions.Count(v => v.IsRelease)} 个正式版 · 本机 {Javas.Count} 个 Java";
+            StatusText = Loc.F("S_Msg_Ready", _allVersions.Count(v => v.IsRelease), Javas.Count);
             RefreshInstalled();
 
-            // 启动器唯一标识:首次运行生成
-            if (string.IsNullOrWhiteSpace(_settings.LauncherId))
+            // 启动器唯一标识 = 构建标识(编译期嵌入二进制) + 安装段(随机,与机器指纹绑定)
+            // 配置被整体拷到别的机器 → 指纹不符 → 重生成安装段,保证标识不重复
+            var machine = FeedbackService.MachineFingerprint();
+            if (string.IsNullOrWhiteSpace(_settings.LauncherId) ||
+                !string.Equals(_settings.LauncherMachine, machine, StringComparison.OrdinalIgnoreCase))
             {
-                _settings.LauncherId = Guid.NewGuid().ToString("N")[..16];
+                _settings.LauncherId = Guid.NewGuid().ToString("N")[..12];
+                _settings.LauncherMachine = machine;
                 SettingsStore.Save(_settings);
             }
-            LauncherIdText = $"启动器标识:{_settings.LauncherId}(反馈时自动附上)";
+            LauncherId = $"{AppInfo.DisplayName}-{AppInfo.BuildTag}-{_settings.LauncherId}";
+            LauncherIdText = $"{Loc.T("S_LauncherIdPrefix")}: {LauncherId}";
+            UseTunaJdkMirror = _settings.UseTunaJdkMirror;
+            SelectedLanguage = LauncherLanguages.FirstOrDefault(l => l.Code == _settings.LauncherLanguage) ?? LauncherLanguages[0];
             // 未自定义时用官方仓库作为反馈默认目标
             FeedbackRepo = string.IsNullOrWhiteSpace(_settings.FeedbackRepo) ? AppInfo.RepoUrl : _settings.FeedbackRepo;
 
@@ -386,7 +524,7 @@ public partial class MainViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            StatusText = "拉取失败:" + ex.Message;
+            StatusText = Loc.T("S_Msg_PullFailed") + ex.Message;
             LogService.Error("拉取版本清单失败", ex);
         }
         finally
@@ -448,6 +586,7 @@ public partial class MainViewModel : ObservableObject
     /// 扫描本机已安装版本:游戏目录 versions/<id>/<id>.jar 存在即视为安装
     public void RefreshInstalled()
     {
+        var prevId = SelectedVersion?.Id; // Clear 会经 ListView 双向绑定清掉选中项,先记住
         InstalledVersions.Clear();
         try
         {
@@ -466,6 +605,19 @@ public partial class MainViewModel : ObservableObject
         }
         catch { /* 目录不可读时视为未安装 */ }
         ShowEmptyState = InstalledVersions.Count == 0;
+
+        // 重建后按 Id 恢复选中(版本已被删除则保持未选)
+        if (prevId != null && SelectedVersion?.Id != prevId)
+            SelectedVersion = InstalledVersions.FirstOrDefault(v => v.Id == prevId);
+
+        // 版本同步维护表:按隔离名单分区(单一数据源 = settings.IsolatedVersions)
+        SyncedVersions.Clear();
+        IsolatedVersionEntries.Clear();
+        foreach (var entry in InstalledVersions)
+        {
+            if (IsIsolated(entry.Id)) IsolatedVersionEntries.Add(entry);
+            else SyncedVersions.Add(entry);
+        }
     }
 
     [RelayCommand]
@@ -475,6 +627,7 @@ public partial class MainViewModel : ObservableObject
     {
         HasSelectedVersion = value != null;
         OnPropertyChanged(nameof(HasNoSelection));
+        OnPropertyChanged(nameof(HeroTitle));
         UpdateIdlePanel();
         if (value != null)
             _ = LoadDetailAsync(value);
@@ -483,21 +636,21 @@ public partial class MainViewModel : ObservableObject
     private async Task LoadDetailAsync(VersionEntry entry)
     {
         IsBusy = true;
-        StatusText = $"正在读取 {entry.Id} 的版本信息…";
+        StatusText = Loc.F("S_Msg_ReadingVersion", entry.Id);
         try
         {
             var detail = await _manifest.GetDetailAsync(entry);
             SelectedDetail = detail;
             JavaHint = detail.JavaVersion is { MajorVersion: > 0 } hint
-                ? $"官方映射:需要 Java {hint.MajorVersion}" +
+                ? Loc.F("S_JavaHintOfficial", hint.MajorVersion) +
                   (hint.Component is { Length: > 0 } component ? $"({component})" : "")
-                : "无 Java 版本约束";
+                : Loc.T("S_JavaHintNone");
             RefreshCheck();
-            StatusText = $"已选中 {entry.Id}";
+            StatusText = Loc.F("S_Msg_Selected", entry.Id);
         }
         catch (Exception ex)
         {
-            StatusText = "读取失败:" + ex.Message;
+            StatusText = Loc.T("S_Msg_ReadFailed") + ex.Message;
         }
         finally
         {
@@ -518,22 +671,28 @@ public partial class MainViewModel : ObservableObject
 
     private void RefreshCheck()
     {
+        // 缺对应 Java 时给出"下载 Java N"入口(内置运行时,Adoptium)
+        var needJava = SelectedDetail?.JavaVersion?.MajorVersion ?? 0;
+        NeedsJavaDownload = needJava > 0 && (SelectedJava?.Version ?? 0) < needJava;
+        JavaDownloadText = NeedsJavaDownload ? Loc.F("S_DownloadJava", needJava) : "";
+
         if (SelectedDetail == null || string.IsNullOrWhiteSpace(GameRoot))
         {
             CheckText = SelectedDetail == null && SelectedVersion == null
-                ? "选择版本查看详情"
+                ? Loc.T("S_PickVersionHint")
                 : "";
             CanLaunch = false;
-            LaunchButtonText = "开始游戏";
+            LaunchButtonText = Loc.T("S_Launch");
             return;
         }
 
-        var plan = _launch.BuildPlan(SelectedDetail, SelectedJava, GameRoot, BuildOptions());
+        var gameDir = EffectiveGameDir(SelectedVersion?.Id ?? SelectedDetail.Id);
+        var plan = _launch.BuildPlan(SelectedDetail, SelectedJava, GameRoot, gameDir, BuildOptions());
         CheckText = plan.Missing.Count == 0
-            ? "资源就绪,可以出发 ✓"
+            ? Loc.T("S_Msg_ReadyToLaunch")
             : string.Join(Environment.NewLine, plan.Missing);
         CanLaunch = plan.CanLaunch;
-        LaunchButtonText = plan.CanLaunch ? "开始游戏" : "还差一点";
+        LaunchButtonText = plan.CanLaunch ? Loc.T("S_Launch") : Loc.T("S_LaunchNotReady");
     }
 
     /// 一键安装 / 补全:客户端 + 库 + natives + 资源对象树 + 日志配置(已存在则跳过)
@@ -542,7 +701,7 @@ public partial class MainViewModel : ObservableObject
     {
         if (SelectedDetail == null)
         {
-            StatusText = "先在列表里选一个版本";
+            StatusText = Loc.T("S_Msg_PickFirst");
             return;
         }
 
@@ -565,12 +724,12 @@ public partial class MainViewModel : ObservableObject
             });
             LogService.Info($"开始安装 {id}(并发 {EffectiveConcurrency})");
             await _install.InstallAsync(SelectedDetail, GameRoot, EffectiveConcurrency, reporter);
-            StatusText = $"{id} 安装完成 ✓";
+            StatusText = Loc.F("S_Msg_InstallDone", id);
             LogService.Info($"{id} 安装完成");
         }
         catch (Exception ex)
         {
-            StatusText = "安装失败:" + ex.Message;
+            StatusText = Loc.T("S_Msg_InstallFailed") + ex.Message;
             LogService.Error($"安装 {id} 失败", ex);
         }
         finally
@@ -587,28 +746,31 @@ public partial class MainViewModel : ObservableObject
     {
         if (SelectedDetail == null || SelectedJava == null) return;
 
-        var plan = _launch.BuildPlan(SelectedDetail, SelectedJava, GameRoot, BuildOptions());
+        var gameDir = EffectiveGameDir(SelectedDetail.Id);
+        var plan = _launch.BuildPlan(SelectedDetail, SelectedJava, GameRoot, gameDir, BuildOptions());
         if (!plan.CanLaunch)
         {
             StatusText = plan.Summary;
             return;
         }
 
-        StatusText = "启动中…";
+        StatusText = Loc.T("S_Msg_Launching");
+        EnsureGameLanguage(SelectedDetail.Id, gameDir);
         try
         {
             var psi = new System.Diagnostics.ProcessStartInfo(plan.FileName, plan.Arguments)
             {
-                WorkingDirectory = GameRoot,
+                WorkingDirectory = gameDir,
                 UseShellExecute = false,
+                CreateNoWindow = true, // 隐藏 java.exe 的控制台窗口:只见游戏,不见黑窗
             };
             System.Diagnostics.Process.Start(psi);
-            StatusText = $"已拉起 Java 进程({SelectedDetail.Id})";
-            LogService.Info($"启动 {SelectedDetail.Id}:{psi.FileName} {psi.Arguments}");
+            StatusText = Loc.F("S_Msg_Launched", SelectedDetail.Id);
+            LogService.Info($"启动 {SelectedDetail.Id}(gameDir={gameDir}):{psi.FileName} {psi.Arguments}");
         }
         catch (Exception ex)
         {
-            StatusText = "启动失败:" + ex.Message;
+            StatusText = Loc.T("S_Msg_LaunchFailed") + ex.Message;
             LogService.Error($"启动 {SelectedDetail.Id} 失败", ex);
         }
         await Task.CompletedTask;
@@ -630,7 +792,7 @@ public partial class MainViewModel : ObservableObject
         _settings.FeedbackRepo = FeedbackRepo.Trim();
         _ = RefreshNewsAsync();
         SettingsStore.Save(_settings);
-        SettingsSavedHint = $"已保存 ✓({DateTime.Now:HH:mm:ss})";
+        SettingsSavedHint = Loc.F("S_Msg_Saved", DateTime.Now.ToString("HH:mm:ss"));
         RefreshCheck();
     }
 
@@ -654,17 +816,64 @@ public partial class MainViewModel : ObservableObject
         StatusText = "已添加 Java:" + home;
     }
 
+    /// 游戏设置窗口(语言 / 常用选项 / 键位;模糊搜索;兼容新旧键位格式)
+    [RelayCommand]
+    private void OpenGameSettings()
+    {
+        LogService.Info("命令:打开游戏设置");
+        try
+        {
+            var versionId = SelectedVersion?.Id ?? "";
+            var window = new Views.GameSettingsWindow(EffectiveGameDir(versionId))
+            {
+                Owner = System.Windows.Application.Current.MainWindow,
+            };
+            window.ShowDialog();
+        }
+        catch (Exception ex)
+        {
+            StatusText = Loc.T("S_Msg_GameSettingsFailed") + ex.Message;
+            LogService.Error("打开游戏设置窗口失败", ex);
+        }
+    }
+
+    /// 语言自动设置 / 跟随启动器:启动前校验(隔离版本不参与同步)
+    private void EnsureGameLanguage(string versionId, string gameDir)
+    {
+        try
+        {
+            if (IsIsolated(versionId)) return; // 独立目录,不参与同步
+
+            var file = new GameOptionsFile(Path.Combine(gameDir, "options.txt"));
+            var old = file.Get("lang") ?? "";
+            var want = _settings.GameLanguageFollows
+                ? Loc.MinecraftLangCode   // 跟随启动器
+                : old.Length == 0 ? "zh_CN" : null; // 未设置过 → 首次预置简体中文
+            if (want == null) return;
+            if (old.Length > 0 && old == old.ToLowerInvariant()) want = want.ToLowerInvariant();
+            if (old == want) return;
+
+            file.Set("lang", want);
+            file.Save();
+            LogService.Info($"启动前同步游戏语言:{want}");
+        }
+        catch { /* 语言同步失败不阻断启动 */ }
+    }
+
     [RelayCommand]
     private void OpenGameFolder()
     {
         try
         {
-            Directory.CreateDirectory(GameRoot);
-            System.Diagnostics.Process.Start("explorer.exe", GameRoot);
+            var versionId = SelectedVersion?.Id ?? "";
+            var dir = EffectiveGameDir(versionId);
+            if (string.IsNullOrWhiteSpace(dir)) dir = GameRoot;
+            Directory.CreateDirectory(dir);
+            System.Diagnostics.Process.Start("explorer.exe", dir);
         }
         catch (Exception ex)
         {
-            StatusText = "打开目录失败:" + ex.Message;
+            StatusText = Loc.T("S_Msg_FolderFailed") + ex.Message;
         }
     }
 }

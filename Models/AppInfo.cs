@@ -6,10 +6,19 @@ namespace McLauncher.Models;
 /// 更新通道:正式版 / Beta 内测 / Alpha 内测 / Dev 内测
 public enum UpdateChannel { Release, Beta, Alpha, Dev }
 
-public sealed record UpdateChannelOption(UpdateChannel Channel, string Name);
+public sealed record UpdateChannelOption(UpdateChannel Channel, string NameKey)
+{
+    public string Name => Services.Loc.T(NameKey);
+}
 
 /// 动画速度档位(借鉴 PCL 的全局动画速度设置)
-public sealed record AnimationSpeedOption(string Name, double Value);
+public sealed record AnimationSpeedOption(string NameKey, double Value)
+{
+    public string Name => Services.Loc.T(NameKey);
+}
+
+/// 启动器语言选项
+public sealed record LanguageOption(string Code, string Name);
 
 /// 主题色选项(设置页色板;IsSelected 驱动选中环)
 public partial class AccentOption : CommunityToolkit.Mvvm.ComponentModel.ObservableObject
@@ -44,6 +53,11 @@ public static class AppInfo
 
     /// 官方仓库(「帮助与反馈」跳转目标;设置里的「反馈仓库地址」可覆盖)
     public const string RepoUrl = "https://github.com/MedicineKing/NannyCraft";
+
+    /// 构建标识:编译期由 版本号+构建日期 派生并"嵌进二进制"(同一构建恒定,不同构建不同)
+    public static string BuildTag { get; } =
+        Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(
+            System.Text.Encoding.UTF8.GetBytes(VersionText + "|" + BuildDate)))[..6].ToLowerInvariant();
 
     public const int MajorVersion = 0;
     public const int KernelVersion = 2;

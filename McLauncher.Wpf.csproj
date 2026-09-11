@@ -6,6 +6,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
+    <ApplicationIcon>Assets\NannyCraft.ico</ApplicationIcon>
     <!-- 显示名:NannyCraft(内部命名空间保持 McLauncher,避免大改) -->
     <AssemblyName>NannyCraft</AssemblyName>
     <AssemblyTitle>NannyCraft</AssemblyTitle>

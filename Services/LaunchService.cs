@@ -9,9 +9,12 @@ namespace McLauncher.Services;
 /// 启动链路服务:完整性检查(与安装链同一套解析) → 按官方参数模板生成命令行 → 拉起进程。
 public sealed class LaunchService
 {
-    /// 生成启动计划(纯函数,无副作用)
-    public LaunchPlan BuildPlan(VersionDetail detail, JavaRuntime? java, string gameRoot, LaunchOptions options)
+    /// 生成启动计划(纯函数,无副作用)。
+    /// gameRoot = 共享根(库/资源/版本文件);gameDir = 实际 --gameDir(隔离版本指向 versions/&lt;id&gt;)。
+    public LaunchPlan BuildPlan(VersionDetail detail, JavaRuntime? java, string gameRoot, string? gameDir, LaunchOptions options)
     {
+        gameDir ??= gameRoot;
+
         var plan = new LaunchPlan();
         var versionDir = Path.Combine(gameRoot, "versions", detail.Id);
         var clientJar = Path.Combine(versionDir, $"{detail.Id}.jar");
@@ -58,7 +61,7 @@ public sealed class LaunchService
             return plan;
         }
 
-        var args = BuildArguments(detail, java!, classpath, nativesDir, gameRoot, options);
+        var args = BuildArguments(detail, java!, classpath, nativesDir, gameRoot, gameDir!, options);
         plan.FileName = java!.JavaExe;
         plan.Arguments = string.Join(' ', args.Select(Quote));
         plan.CanLaunch = true;
@@ -68,7 +71,7 @@ public sealed class LaunchService
 
     /// 参数生成:1.13+ 走官方 arguments 模板(${...} 变量替换);旧版本走兜底拼装。
     private static List<string> BuildArguments(VersionDetail detail, JavaRuntime java, List<string> classpath,
-        string nativesDir, string gameRoot, LaunchOptions options)
+        string nativesDir, string gameRoot, string gameDir, LaunchOptions options)
     {
         var assetsDir = Path.Combine(gameRoot, "assets");
         var playerName = string.IsNullOrWhiteSpace(options.PlayerName) ? "Player" : options.PlayerName.Trim();
@@ -77,7 +80,7 @@ public sealed class LaunchService
         {
             ["auth_player_name"] = playerName,
             ["version_name"] = detail.Id,
-            ["game_directory"] = gameRoot,
+            ["game_directory"] = gameDir,
             ["assets_root"] = assetsDir,
             ["assets_index_name"] = detail.AssetIndex?.Id ?? detail.Assets ?? "legacy",
             ["auth_uuid"] = OfflineUuid(playerName),

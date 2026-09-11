@@ -1,0 +1,192 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:s="clr-namespace:System;assembly=mscorlib">
+
+    <!-- 导航 / 标题 -->
+    <s:String x:Key="S_NavHome">主页</s:String>
+    <s:String x:Key="S_NavDownload">下载</s:String>
+    <s:String x:Key="S_NavSettings">设置</s:String>
+    <s:String x:Key="S_NavAbout">关于</s:String>
+    <s:String x:Key="S_LocalFirst">本地优先</s:String>
+
+    <!-- 主页 -->
+    <s:String x:Key="S_InstalledVersions">已安装的版本</s:String>
+    <s:String x:Key="S_EmptyPrefix">你还没有安装 Minecraft 哦,先去</s:String>
+    <s:String x:Key="S_EmptyLink">安装</s:String>
+    <s:String x:Key="S_EmptySuffix">吧</s:String>
+    <s:String x:Key="S_EmptyHint">到「下载」页挑一个版本,一键装好就会出现在这里</s:String>
+    <s:String x:Key="S_GameDetails">游戏详情</s:String>
+    <s:String x:Key="S_OneClickComplete">一键补全</s:String>
+    <s:String x:Key="S_GameSettingsBtn">游戏设置</s:String>
+    <s:String x:Key="S_SyncTitle">版本同步</s:String>
+    <s:String x:Key="S_SyncHint">隔离的版本使用独立游戏目录(设置 / 存档 / 模组独立),并且不参与同步;拖动按钮在两栏之间移动</s:String>
+    <s:String x:Key="S_SyncGroup">参与同步</s:String>
+    <s:String x:Key="S_IsolationGroup">版本隔离(不同步)</s:String>
+    <s:String x:Key="S_ToIsolate">设为隔离</s:String>
+    <s:String x:Key="S_ToRestore">恢复同步</s:String>
+    <s:String x:Key="S_SyncEmpty">(空)</s:String>
+    <s:String x:Key="S_GS_FollowHint">游戏语言跟随启动器语言(实时跟随,启动前校验)</s:String>
+    <s:String x:Key="S_GS_On">开启</s:String>
+    <s:String x:Key="S_GS_FmtLegacy">键位格式:旧版(数字键码)——保存时保持旧格式</s:String>
+    <s:String x:Key="S_GS_FmtNew">键位格式:新版(key.keyboard.*)——保存时保持新格式</s:String>
+    <s:String x:Key="S_GS_Reloaded">已重新载入</s:String>
+    <s:String x:Key="S_GS_NoChange">没有变化</s:String>
+    <s:String x:Key="S_GS_SavedN">已保存 ✓({0} 项)</s:String>
+    <s:String x:Key="S_GS_SaveFailed">保存失败: </s:String>
+    <s:String x:Key="S_Slogan">你只管点开始,剩下的交给 NannyCraft</s:String>
+    <s:String x:Key="S_NewsCardHint">快讯的源 / 代理 / 翻译在「资讯」卡片里配置</s:String>
+
+    <!-- 版本类型 / 更新通道 / 动画速度 / Java 来源 -->
+    <s:String x:Key="S_TypeRelease">正式版</s:String>
+    <s:String x:Key="S_TypeSnapshot">快照</s:String>
+    <s:String x:Key="S_TypeOldBeta">旧 Beta</s:String>
+    <s:String x:Key="S_TypeOldAlpha">旧 Alpha</s:String>
+    <s:String x:Key="S_TypeLocal">本地</s:String>
+    <s:String x:Key="S_ChRelease">正式版</s:String>
+    <s:String x:Key="S_ChBeta">Beta 内测</s:String>
+    <s:String x:Key="S_ChAlpha">Alpha 内测</s:String>
+    <s:String x:Key="S_ChDev">Dev 内测</s:String>
+    <s:String x:Key="S_AS05">0.5× 舒缓</s:String>
+    <s:String x:Key="S_AS075">0.75× 偏慢</s:String>
+    <s:String x:Key="S_AS1">1× 标准</s:String>
+    <s:String x:Key="S_AS125">1.25× 偏快</s:String>
+    <s:String x:Key="S_AS15">1.5× 轻快</s:String>
+    <s:String x:Key="S_AS2">2× 迅捷</s:String>
+    <s:String x:Key="S_SrcJavaHome">JAVA_HOME</s:String>
+    <s:String x:Key="S_SrcRegistry">注册表</s:String>
+    <s:String x:Key="S_SrcCommonDir">安装目录</s:String>
+    <s:String x:Key="S_SrcPath">PATH</s:String>
+    <s:String x:Key="S_SrcBundled">内置</s:String>
+
+    <!-- 游戏设置:选项目录标签 -->
+    <s:String x:Key="S_OptLang">语言</s:String>
+    <s:String x:Key="S_OptMaster">主音量</s:String>
+    <s:String x:Key="S_OptMusic">音乐</s:String>
+    <s:String x:Key="S_OptRecord">唱片机 / 音符盒</s:String>
+    <s:String x:Key="S_OptWeather">天气音效</s:String>
+    <s:String x:Key="S_OptBlocks">方块音效</s:String>
+    <s:String x:Key="S_OptHostile">敌对生物</s:String>
+    <s:String x:Key="S_OptNeutral">中立生物</s:String>
+    <s:String x:Key="S_OptPlayers">玩家音效</s:String>
+    <s:String x:Key="S_OptAmbient">环境音效</s:String>
+    <s:String x:Key="S_OptVoice">语音</s:String>
+    <s:String x:Key="S_OptRenderDistance">视距</s:String>
+    <s:String x:Key="S_OptSimulationDistance">模拟距离</s:String>
+    <s:String x:Key="S_OptFov">视野</s:String>
+    <s:String x:Key="S_OptGamma">亮度</s:String>
+    <s:String x:Key="S_OptSensitivity">鼠标灵敏度</s:String>
+    <s:String x:Key="S_OptGuiScale">界面尺寸</s:String>
+    <s:String x:Key="S_OptGraphics">图形</s:String>
+    <s:String x:Key="S_OptParticles">粒子效果</s:String>
+    <s:String x:Key="S_OptClouds">云</s:String>
+    <s:String x:Key="S_OptVsync">垂直同步</s:String>
+    <s:String x:Key="S_OptBob">视角摇晃</s:String>
+    <s:String x:Key="S_OptAutoJump">自动跳跃</s:String>
+    <s:String x:Key="S_OptChat">聊天可见性</s:String>
+    <s:String x:Key="S_OpenGameFolder">打开游戏目录</s:String>
+    <s:String x:Key="S_NoVersionSelected">未选择版本</s:String>
+    <s:String x:Key="S_PickVersionHint">选择版本查看详情</s:String>
+    <s:String x:Key="S_TodayNews">今日 MC 快讯</s:String>
+
+    <!-- 下载页 -->
+    <s:String x:Key="S_ChooseVersion">选择一个要安装的版本</s:String>
+    <s:String x:Key="S_FilterRelease">正式版</s:String>
+    <s:String x:Key="S_FilterSnapshot">快照版</s:String>
+    <s:String x:Key="S_FilterAprilFools">愚人节版</s:String>
+    <s:String x:Key="S_FilterAncient">远古版本</s:String>
+    <s:String x:Key="S_Install">一键安装</s:String>
+    <s:String x:Key="S_NoSelectionInstallHint">你还没有选择要安装的版本哦,选择完成才可以安装</s:String>
+
+    <!-- 设置 · 游戏 -->
+    <s:String x:Key="S_Game">游戏</s:String>
+    <s:String x:Key="S_MaxMemory">最大内存(启动参数 -Xmx)</s:String>
+    <s:String x:Key="S_GameDir">游戏目录</s:String>
+    <s:String x:Key="S_Open">打开</s:String>
+    <s:String x:Key="S_Username">用户名(离线模式)</s:String>
+    <s:String x:Key="S_ManualAddJava">手动添加…</s:String>
+    <s:String x:Key="S_MirrorToggle">内置 Java 下载走清华镜像(国内加速,失败自动回退官方)</s:String>
+    <s:String x:Key="S_JvmArgsLabel">附加 JVM 参数(可选)</s:String>
+    <s:String x:Key="S_Save">保存设置</s:String>
+    <s:String x:Key="S_LauncherLang">启动器语言</s:String>
+    <s:String x:Key="S_DownloadConcurrency">下载并发数</s:String>
+    <s:String x:Key="S_Auto">自动</s:String>
+
+    <!-- 设置 · 外观 -->
+    <s:String x:Key="S_Appearance">外观</s:String>
+    <s:String x:Key="S_ThemeColor">主题色</s:String>
+    <s:String x:Key="S_ThemeColorHint">主题色会应用到按钮、选中态与窗口控件</s:String>
+    <s:String x:Key="S_Background">主页背景图</s:String>
+    <s:String x:Key="S_Choose">选择…</s:String>
+    <s:String x:Key="S_Clear">清除</s:String>
+    <s:String x:Key="S_BackgroundHint">支持 PNG / JPG / BMP,图片铺在主页顶部;不选则用默认渐变</s:String>
+    <s:String x:Key="S_AnimSpeed">动画速度</s:String>
+    <s:String x:Key="S_AnimSpeedHint">始终遵循系统「减少动画」开关;页面转场立即生效,控件动效重启后生效</s:String>
+
+    <!-- 设置 · 资讯 -->
+    <s:String x:Key="S_News">资讯</s:String>
+    <s:String x:Key="S_NewsSource">资讯源地址(留空 = 官方源;可填本机转发 / 镜像)</s:String>
+    <s:String x:Key="S_NewsProxy">资讯代理(可选,如 http://127.0.0.1:7890;翻译走同一代理)</s:String>
+    <s:String x:Key="S_NewsTranslateToggle">自动翻译快讯(英文 → 简体中文)</s:String>
+    <s:String x:Key="S_NewsShowToggle">主页未选版本时显示「今日 MC 快讯」</s:String>
+    <s:String x:Key="S_FeedbackRepo">反馈仓库地址(留空 = 官方仓库 MedicineKing/NannyCraft)</s:String>
+    <s:String x:Key="S_NewsHint">改完点「保存设置」重新拉取;任何环节失败都不影响启动器使用</s:String>
+
+    <!-- 设置 · 版本与更新 -->
+    <s:String x:Key="S_VersionUpdate">版本与更新</s:String>
+    <s:String x:Key="S_Version">版本号</s:String>
+    <s:String x:Key="S_BuildDate">构建日期</s:String>
+    <s:String x:Key="S_InstallDate">安装日期</s:String>
+    <s:String x:Key="S_Channel">更新通道</s:String>
+    <s:String x:Key="S_CheckUpdate">检查更新</s:String>
+
+    <!-- 关于 -->
+    <s:String x:Key="S_AboutDesc">一个懒人向的 Minecraft 启动器:零配置决策、坏了自己修、附带服主与联机工具箱。</s:String>
+    <s:String x:Key="S_AboutLegal">· 非官方产品,与 Mojang / Microsoft 无关联;&#x000A;· 零遥测、零数据收集,所有配置与文件都在你自己手里;&#x000A;· 启动所需的 Java 由你本机提供或自动补全(官方 javaVersion 映射)。</s:String>
+    <s:String x:Key="S_AboutTech">技术栈:.NET 8 · WPF · WPF-UI(Fluent);动效遵循 Apple HIG 与 HarmonyOS 规范(150/220/350ms,支持系统减少动画)。</s:String>
+    <s:String x:Key="S_HelpFeedback">帮助与反馈</s:String>
+    <s:String x:Key="S_HelpDesc">反馈会跳到 GitHub Issues:环境信息(系统 / 硬件 / 运行环境)与运行日志已自动填好,崩溃日志(若有)一并附上,提交前可自行编辑。</s:String>
+    <s:String x:Key="S_ReportBug">报告 Bug</s:String>
+    <s:String x:Key="S_SuggestIdea">功能建议</s:String>
+    <s:String x:Key="S_OpenLogFolder">打开日志目录</s:String>
+    <s:String x:Key="S_LauncherIdPrefix">启动器标识</s:String>
+
+    <!-- 游戏设置窗口 -->
+    <s:String x:Key="S_GS_Title">游戏设置</s:String>
+    <s:String x:Key="S_GS_SearchTip">模糊匹配,多词用空格分开:音乐 音量 / 视距 render / 键位 前进 …</s:String>
+    <s:String x:Key="S_GS_SearchHint">多词空格分隔,输入即筛选</s:String>
+    <s:String x:Key="S_GS_Save">保存</s:String>
+    <s:String x:Key="S_GS_Reload">重新载入</s:String>
+    <s:String x:Key="S_GS_NoOptions">还没有生成 options.txt——先在启动器里启动一次游戏,再回来调设置。</s:String>
+    <s:String x:Key="S_GS_Missing">此版本无此项</s:String>
+    <s:String x:Key="S_GS_FollowLauncher">跟随启动器</s:String>
+    <s:String x:Key="S_GS_Isolate">此版本使用独立游戏目录(版本隔离,不参与同步)</s:String>
+    <s:String x:Key="S_GS_IsolateHint">独立后,此版本的设置 / 存档 / 模组与共享目录互不影响</s:String>
+
+    <!-- 运行状态消息 -->
+    <s:String x:Key="S_Launch">开始游戏</s:String>
+    <s:String x:Key="S_LaunchNotReady">还差一点</s:String>
+    <s:String x:Key="S_DownloadJava">下载 Java {0}</s:String>
+    <s:String x:Key="S_Msg_Loading">正在加载版本列表…</s:String>
+    <s:String x:Key="S_Msg_PullingManifest">正在拉取 Mojang 版本清单…</s:String>
+    <s:String x:Key="S_Msg_PullFailed">拉取失败: </s:String>
+    <s:String x:Key="S_Msg_ReadingVersion">正在读取 {0} 的版本信息…</s:String>
+    <s:String x:Key="S_Msg_ReadFailed">读取失败: </s:String>
+    <s:String x:Key="S_Msg_PickFirst">先在列表里选一个版本</s:String>
+    <s:String x:Key="S_Msg_Installing">开始安装 {0}(并发 {1})…</s:String>
+    <s:String x:Key="S_Msg_InstallFailed">安装失败: </s:String>
+    <s:String x:Key="S_Msg_LaunchFailed">启动失败: </s:String>
+    <s:String x:Key="S_Msg_FolderFailed">打开目录失败: </s:String>
+    <s:String x:Key="S_Msg_GameSettingsFailed">打开游戏设置失败: </s:String>
+    <s:String x:Key="S_Msg_JavaDownloading">正在下载 Java {0} 运行时(下载完成后自动校验、解压)…</s:String>
+    <s:String x:Key="S_Msg_JavaReady">Java {0} 已就位:{1}</s:String>
+    <s:String x:Key="S_Msg_JavaFailed">下载 Java {0} 失败,换下载源或稍后再试</s:String>
+    <s:String x:Key="S_JavaHintOfficial">官方映射:需要 Java {0}</s:String>
+    <s:String x:Key="S_JavaHintNone">无 Java 版本约束</s:String>
+    <s:String x:Key="S_Msg_Ready">就绪 · {0} 个正式版 · 本机 {1} 个 Java</s:String>
+    <s:String x:Key="S_Msg_Selected">已选中 {0}</s:String>
+    <s:String x:Key="S_Msg_ReadyToLaunch">资源就绪,可以出发 ✓</s:String>
+    <s:String x:Key="S_Msg_Launching">启动中…</s:String>
+    <s:String x:Key="S_Msg_Launched">已拉起 Java 进程({0})</s:String>
+    <s:String x:Key="S_Msg_InstallDone">{0} 安装完成 ✓</s:String>
+    <s:String x:Key="S_Msg_Saved">已保存 ✓({0})</s:String>
+</ResourceDictionary>

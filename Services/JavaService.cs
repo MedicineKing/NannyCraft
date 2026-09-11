@@ -26,6 +26,15 @@ public sealed class JavaService
             found.Add(new JavaRuntime { Home = norm, JavaExe = javaExe, Version = ReadVersion(norm), Source = source });
         }
 
+        // 0) 内置运行时(由 JdkService 下载到数据目录,优先级最高)
+        try
+        {
+            if (Directory.Exists(JdkService.JavaRoot))
+                foreach (var dir in Directory.GetDirectories(JdkService.JavaRoot))
+                    TryAdd(dir, JavaSource.Bundled);
+        }
+        catch { /* 忽略损坏的内置目录 */ }
+
         // 1) JAVA_HOME
         TryAdd(Environment.GetEnvironmentVariable("JAVA_HOME"), JavaSource.JavaHome);
 

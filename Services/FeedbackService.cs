@@ -73,6 +73,22 @@ public static class FeedbackService
 
     private static string AppInfoVersion() => Models.AppInfo.VersionText;
 
+    /// 本机指纹(Windows MachineGuid 的 SHA-256 前 8 位)。
+    /// 仅本地使用:校验"配置被整体拷到另一台机器"时重生成安装段,保证标识唯一。
+    public static string MachineFingerprint()
+    {
+        try
+        {
+            using var key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Cryptography");
+            var guid = key?.GetValue("MachineGuid") as string;
+            if (!string.IsNullOrWhiteSpace(guid))
+                return Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(
+                    System.Text.Encoding.UTF8.GetBytes(guid)))[..8].ToLowerInvariant();
+        }
+        catch { }
+        return "00000000";
+    }
+
     private static string OsName()
     {
         try

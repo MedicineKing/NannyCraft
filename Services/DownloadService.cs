@@ -10,7 +10,7 @@ public sealed class DownloadService
 {
     private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromMinutes(30) };
 
-    public async Task DownloadAsync(string url, string destPath, string? sha1, IProgress<double>? progress, CancellationToken ct = default)
+    public async Task DownloadAsync(string url, string destPath, string? sha1, IProgress<double>? progress, CancellationToken ct = default, string? sha256 = null)
     {
         var dir = Path.GetDirectoryName(destPath);
         if (dir is { Length: > 0 }) Directory.CreateDirectory(dir);
@@ -34,7 +34,16 @@ public sealed class DownloadService
             }
         }
 
-        if (sha1 is { Length: > 0 })
+        if (sha256 is { Length: > 0 })
+        {
+            var actual = ComputeSha256(partPath);
+            if (!string.Equals(actual, sha256, StringComparison.OrdinalIgnoreCase))
+            {
+                File.Delete(partPath);
+                throw new InvalidDataException($"SHA-256 校验失败: {Path.GetFileName(destPath)}");
+            }
+        }
+        else if (sha1 is { Length: > 0 })
         {
             var actual = ComputeSha1(partPath);
             if (!string.Equals(actual, sha1, StringComparison.OrdinalIgnoreCase))
@@ -51,5 +60,11 @@ public sealed class DownloadService
     {
         using var stream = File.OpenRead(path);
         return Convert.ToHexString(SHA1.HashData(stream)).ToLowerInvariant();
+    }
+
+    public static string ComputeSha256(string path)
+    {
+        using var stream = File.OpenRead(path);
+        return Convert.ToHexString(SHA256.HashData(stream)).ToLowerInvariant();
     }
 }

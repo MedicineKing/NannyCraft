@@ -1,0 +1,192 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:s="clr-namespace:System;assembly=mscorlib">
+
+    <!-- Nav / titles -->
+    <s:String x:Key="S_NavHome">Home</s:String>
+    <s:String x:Key="S_NavDownload">Download</s:String>
+    <s:String x:Key="S_NavSettings">Settings</s:String>
+    <s:String x:Key="S_NavAbout">About</s:String>
+    <s:String x:Key="S_LocalFirst">Local-first</s:String>
+
+    <!-- Home -->
+    <s:String x:Key="S_InstalledVersions">Installed versions</s:String>
+    <s:String x:Key="S_EmptyPrefix">You haven't installed Minecraft yet — go to </s:String>
+    <s:String x:Key="S_EmptyLink">Install</s:String>
+    <s:String x:Key="S_EmptySuffix">.</s:String>
+    <s:String x:Key="S_EmptyHint">Pick a version on the Download page; it will show up here once installed.</s:String>
+    <s:String x:Key="S_GameDetails">Game details</s:String>
+    <s:String x:Key="S_OneClickComplete">Repair</s:String>
+    <s:String x:Key="S_GameSettingsBtn">Game settings</s:String>
+    <s:String x:Key="S_SyncTitle">Version sync</s:String>
+    <s:String x:Key="S_SyncHint">Isolated versions use their own game directory (settings / saves / mods stay separate) and are excluded from syncing; move versions between the two lists</s:String>
+    <s:String x:Key="S_SyncGroup">Synced</s:String>
+    <s:String x:Key="S_IsolationGroup">Isolated (not synced)</s:String>
+    <s:String x:Key="S_ToIsolate">Isolate</s:String>
+    <s:String x:Key="S_ToRestore">Re-sync</s:String>
+    <s:String x:Key="S_SyncEmpty">(empty)</s:String>
+    <s:String x:Key="S_GS_FollowHint">The game language follows the launcher language (live, verified before launch)</s:String>
+    <s:String x:Key="S_GS_On">On</s:String>
+    <s:String x:Key="S_GS_FmtLegacy">Key format: legacy (numeric codes) — kept on save</s:String>
+    <s:String x:Key="S_GS_FmtNew">Key format: modern (key.keyboard.*) — kept on save</s:String>
+    <s:String x:Key="S_GS_Reloaded">Reloaded</s:String>
+    <s:String x:Key="S_GS_NoChange">No changes</s:String>
+    <s:String x:Key="S_GS_SavedN">Saved ✓ ({0} items)</s:String>
+    <s:String x:Key="S_GS_SaveFailed">Save failed: </s:String>
+    <s:String x:Key="S_Slogan">You hit play — NannyCraft does the rest</s:String>
+    <s:String x:Key="S_NewsCardHint">Configure news source / proxy / translation in the News card</s:String>
+
+    <!-- Version types / update channels / animation speed / Java source -->
+    <s:String x:Key="S_TypeRelease">Release</s:String>
+    <s:String x:Key="S_TypeSnapshot">Snapshot</s:String>
+    <s:String x:Key="S_TypeOldBeta">Old Beta</s:String>
+    <s:String x:Key="S_TypeOldAlpha">Old Alpha</s:String>
+    <s:String x:Key="S_TypeLocal">Local</s:String>
+    <s:String x:Key="S_ChRelease">Stable</s:String>
+    <s:String x:Key="S_ChBeta">Beta</s:String>
+    <s:String x:Key="S_ChAlpha">Alpha</s:String>
+    <s:String x:Key="S_ChDev">Dev</s:String>
+    <s:String x:Key="S_AS05">0.5× Relaxed</s:String>
+    <s:String x:Key="S_AS075">0.75× Slower</s:String>
+    <s:String x:Key="S_AS1">1× Standard</s:String>
+    <s:String x:Key="S_AS125">1.25× Faster</s:String>
+    <s:String x:Key="S_AS15">1.5× Brisk</s:String>
+    <s:String x:Key="S_AS2">2× Snappy</s:String>
+    <s:String x:Key="S_SrcJavaHome">JAVA_HOME</s:String>
+    <s:String x:Key="S_SrcRegistry">Registry</s:String>
+    <s:String x:Key="S_SrcCommonDir">Common dir</s:String>
+    <s:String x:Key="S_SrcPath">PATH</s:String>
+    <s:String x:Key="S_SrcBundled">Bundled</s:String>
+
+    <!-- Game settings: option labels -->
+    <s:String x:Key="S_OptLang">Language</s:String>
+    <s:String x:Key="S_OptMaster">Master volume</s:String>
+    <s:String x:Key="S_OptMusic">Music</s:String>
+    <s:String x:Key="S_OptRecord">Jukebox / Noteblock</s:String>
+    <s:String x:Key="S_OptWeather">Weather</s:String>
+    <s:String x:Key="S_OptBlocks">Blocks</s:String>
+    <s:String x:Key="S_OptHostile">Hostile mobs</s:String>
+    <s:String x:Key="S_OptNeutral">Neutral mobs</s:String>
+    <s:String x:Key="S_OptPlayers">Players</s:String>
+    <s:String x:Key="S_OptAmbient">Ambient</s:String>
+    <s:String x:Key="S_OptVoice">Voice</s:String>
+    <s:String x:Key="S_OptRenderDistance">Render distance</s:String>
+    <s:String x:Key="S_OptSimulationDistance">Simulation distance</s:String>
+    <s:String x:Key="S_OptFov">FOV</s:String>
+    <s:String x:Key="S_OptGamma">Brightness</s:String>
+    <s:String x:Key="S_OptSensitivity">Sensitivity</s:String>
+    <s:String x:Key="S_OptGuiScale">GUI scale</s:String>
+    <s:String x:Key="S_OptGraphics">Graphics</s:String>
+    <s:String x:Key="S_OptParticles">Particles</s:String>
+    <s:String x:Key="S_OptClouds">Clouds</s:String>
+    <s:String x:Key="S_OptVsync">VSync</s:String>
+    <s:String x:Key="S_OptBob">View bobbing</s:String>
+    <s:String x:Key="S_OptAutoJump">Auto-jump</s:String>
+    <s:String x:Key="S_OptChat">Chat visibility</s:String>
+    <s:String x:Key="S_OpenGameFolder">Open game folder</s:String>
+    <s:String x:Key="S_NoVersionSelected">No version selected</s:String>
+    <s:String x:Key="S_PickVersionHint">Select a version to see details</s:String>
+    <s:String x:Key="S_TodayNews">MC news</s:String>
+
+    <!-- Download page -->
+    <s:String x:Key="S_ChooseVersion">Choose a version to install</s:String>
+    <s:String x:Key="S_FilterRelease">Release</s:String>
+    <s:String x:Key="S_FilterSnapshot">Snapshot</s:String>
+    <s:String x:Key="S_FilterAprilFools">April Fools</s:String>
+    <s:String x:Key="S_FilterAncient">Ancient</s:String>
+    <s:String x:Key="S_Install">One-click install</s:String>
+    <s:String x:Key="S_NoSelectionInstallHint">No version selected yet — pick one to install.</s:String>
+
+    <!-- Settings · Game -->
+    <s:String x:Key="S_Game">Game</s:String>
+    <s:String x:Key="S_MaxMemory">Max memory (-Xmx)</s:String>
+    <s:String x:Key="S_GameDir">Game directory</s:String>
+    <s:String x:Key="S_Open">Open</s:String>
+    <s:String x:Key="S_Username">Username (offline)</s:String>
+    <s:String x:Key="S_ManualAddJava">Add manually…</s:String>
+    <s:String x:Key="S_MirrorToggle">Use the Tsinghua mirror for built-in Java downloads</s:String>
+    <s:String x:Key="S_JvmArgsLabel">Extra JVM args (optional)</s:String>
+    <s:String x:Key="S_Save">Save</s:String>
+    <s:String x:Key="S_LauncherLang">Launcher language</s:String>
+    <s:String x:Key="S_DownloadConcurrency">Download concurrency</s:String>
+    <s:String x:Key="S_Auto">Auto</s:String>
+
+    <!-- Settings · Appearance -->
+    <s:String x:Key="S_Appearance">Appearance</s:String>
+    <s:String x:Key="S_ThemeColor">Accent color</s:String>
+    <s:String x:Key="S_ThemeColorHint">Applied to buttons, selections and window chrome</s:String>
+    <s:String x:Key="S_Background">Home background image</s:String>
+    <s:String x:Key="S_Choose">Choose…</s:String>
+    <s:String x:Key="S_Clear">Clear</s:String>
+    <s:String x:Key="S_BackgroundHint">PNG / JPG / BMP, shown on top of the home page; leave empty for the default gradient</s:String>
+    <s:String x:Key="S_AnimSpeed">Animation speed</s:String>
+    <s:String x:Key="S_AnimSpeedHint">Always follows the system "reduce motion" setting; page transitions apply immediately, control animations after a restart</s:String>
+
+    <!-- Settings · News -->
+    <s:String x:Key="S_News">News</s:String>
+    <s:String x:Key="S_NewsSource">News source (empty = official; local relay / mirror supported)</s:String>
+    <s:String x:Key="S_NewsProxy">News proxy (optional, e.g. http://127.0.0.1:7890; translation uses it too)</s:String>
+    <s:String x:Key="S_NewsTranslateToggle">Auto-translate news into Chinese</s:String>
+    <s:String x:Key="S_NewsShowToggle">Show MC news when no version is selected</s:String>
+    <s:String x:Key="S_FeedbackRepo">Feedback repo (empty = official: MedicineKing/NannyCraft)</s:String>
+    <s:String x:Key="S_NewsHint">Click Save to reload; failures never block the launcher</s:String>
+
+    <!-- Settings · Version & updates -->
+    <s:String x:Key="S_VersionUpdate">Version &amp; updates</s:String>
+    <s:String x:Key="S_Version">Version</s:String>
+    <s:String x:Key="S_BuildDate">Build date</s:String>
+    <s:String x:Key="S_InstallDate">Install date</s:String>
+    <s:String x:Key="S_Channel">Update channel</s:String>
+    <s:String x:Key="S_CheckUpdate">Check for updates</s:String>
+
+    <!-- About -->
+    <s:String x:Key="S_AboutDesc">A lazy-friendly Minecraft launcher: zero-config decisions, self-healing, plus toolboxes for server owners and multiplayer.</s:String>
+    <s:String x:Key="S_AboutLegal">· Unofficial product, not affiliated with Mojang / Microsoft;&#x000A;· Zero telemetry, zero data collection — everything stays on your machine;&#x000A;· Java is provided by your system or fetched automatically (official javaVersion mapping).</s:String>
+    <s:String x:Key="S_AboutTech">Built with .NET 8 · WPF · WPF-UI (Fluent); motion follows Apple HIG / HarmonyOS specs (150/220/350 ms, respects reduce-motion).</s:String>
+    <s:String x:Key="S_HelpFeedback">Help &amp; feedback</s:String>
+    <s:String x:Key="S_HelpDesc">Opens a prefilled GitHub issue with your environment and logs (crash log included when present). You can edit everything before submitting.</s:String>
+    <s:String x:Key="S_ReportBug">Report a bug</s:String>
+    <s:String x:Key="S_SuggestIdea">Suggest a feature</s:String>
+    <s:String x:Key="S_OpenLogFolder">Open log folder</s:String>
+    <s:String x:Key="S_LauncherIdPrefix">Launcher ID</s:String>
+
+    <!-- Game settings window -->
+    <s:String x:Key="S_GS_Title">Game settings</s:String>
+    <s:String x:Key="S_GS_SearchTip">Fuzzy match; separate words with spaces: music volume / distance render / key forward …</s:String>
+    <s:String x:Key="S_GS_SearchHint">Space-separated words filter as you type</s:String>
+    <s:String x:Key="S_GS_Save">Save</s:String>
+    <s:String x:Key="S_GS_Reload">Reload</s:String>
+    <s:String x:Key="S_GS_NoOptions">options.txt not found yet — launch the game once, then come back.</s:String>
+    <s:String x:Key="S_GS_Missing">Not available in this version</s:String>
+    <s:String x:Key="S_GS_FollowLauncher">Follow launcher</s:String>
+    <s:String x:Key="S_GS_Isolate">Use a separate game directory for this version (isolation, excluded from syncing)</s:String>
+    <s:String x:Key="S_GS_IsolateHint">Once isolated, this version keeps its own settings / saves / mods, independent from the shared directory</s:String>
+
+    <!-- Runtime messages -->
+    <s:String x:Key="S_Launch">Play</s:String>
+    <s:String x:Key="S_LaunchNotReady">Not ready</s:String>
+    <s:String x:Key="S_DownloadJava">Download Java {0}</s:String>
+    <s:String x:Key="S_Msg_Loading">Loading versions…</s:String>
+    <s:String x:Key="S_Msg_PullingManifest">Fetching the Mojang version manifest…</s:String>
+    <s:String x:Key="S_Msg_PullFailed">Failed to fetch: </s:String>
+    <s:String x:Key="S_Msg_ReadingVersion">Reading {0} info…</s:String>
+    <s:String x:Key="S_Msg_ReadFailed">Failed to read: </s:String>
+    <s:String x:Key="S_Msg_PickFirst">Pick a version from the list first</s:String>
+    <s:String x:Key="S_Msg_Installing">Installing {0} (concurrency {1})…</s:String>
+    <s:String x:Key="S_Msg_InstallFailed">Install failed: </s:String>
+    <s:String x:Key="S_Msg_LaunchFailed">Launch failed: </s:String>
+    <s:String x:Key="S_Msg_FolderFailed">Failed to open the folder: </s:String>
+    <s:String x:Key="S_Msg_GameSettingsFailed">Failed to open game settings: </s:String>
+    <s:String x:Key="S_Msg_JavaDownloading">Downloading Java {0} runtime (verified and extracted automatically)…</s:String>
+    <s:String x:Key="S_Msg_JavaReady">Java {0} ready: {1}</s:String>
+    <s:String x:Key="S_Msg_JavaFailed">Failed to download Java {0} — try another source or retry later</s:String>
+    <s:String x:Key="S_JavaHintOfficial">Official mapping: Java {0} required</s:String>
+    <s:String x:Key="S_JavaHintNone">No Java requirement</s:String>
+    <s:String x:Key="S_Msg_Ready">Ready · {0} releases · {1} Java runtimes</s:String>
+    <s:String x:Key="S_Msg_Selected">Selected {0}</s:String>
+    <s:String x:Key="S_Msg_ReadyToLaunch">All set — ready to go ✓</s:String>
+    <s:String x:Key="S_Msg_Launching">Launching…</s:String>
+    <s:String x:Key="S_Msg_Launched">Java process started ({0})</s:String>
+    <s:String x:Key="S_Msg_InstallDone">{0} installed ✓</s:String>
+    <s:String x:Key="S_Msg_Saved">Saved ✓ ({0})</s:String>
+</ResourceDictionary>

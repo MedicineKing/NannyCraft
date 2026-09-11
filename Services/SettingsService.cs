@@ -35,8 +35,18 @@ public sealed class LauncherSettings
     public string NewsProxy { get; set; } = "";
     /// 快讯自动翻译(英文 → 简体中文)
     public bool NewsTranslate { get; set; } = true;
-    /// 启动器唯一标识(首次运行生成,反馈时自动附带)
+    /// 启动器唯一标识的安装段(首次运行生成,反馈时自动附带)
     public string LauncherId { get; set; } = "";
+    /// 生成 LauncherId 时的机器指纹:配置被整体拷到别的机器时,重生成安装段避免重复
+    public string LauncherMachine { get; set; } = "";
+    /// JDK 下载走清华镜像(国内加速;失败自动回退官方)
+    public bool UseTunaJdkMirror { get; set; } = false;
+    /// 启动器界面语言(zh-CN / en-US)
+    public string LauncherLanguage { get; set; } = "zh-CN";
+    /// 游戏语言跟随启动器(实时跟随 + 启动前校验)
+    public bool GameLanguageFollows { get; set; } = true;
+    /// 版本隔离名单:这些版本使用独立游戏目录(versions/<id> 作为 gameDir),不参与同步
+    public List<string> IsolatedVersions { get; set; } = new();
     /// 反馈仓库地址(空 = 用官方仓库 MedicineKing/NannyCraft)
     public string FeedbackRepo { get; set; } = "";
 }

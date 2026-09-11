@@ -47,13 +47,13 @@ public partial class MainWindow : FluentWindow
 
     private void OnNavChecked(object sender, RoutedEventArgs e)
     {
-        // 导航用 Tag 存图标码点,Content 存页面名;页面对照表在这里维护
+        // 导航用 Tag 存图标码点;页面按控件名分发(Content 已是本地化文案,不能再按中文匹配)
         if (sender is not RadioButton button) return;
-        _vm.CurrentPage = button.Content?.ToString() switch
+        _vm.CurrentPage = button.Name switch
         {
-            "下载" => AppPage.Download,
-            "设置" => AppPage.Settings,
-            "关于" => AppPage.About,
+            "NavDownload" => AppPage.Download,
+            "NavSettings" => AppPage.Settings,
+            "NavAbout" => AppPage.About,
             _ => AppPage.Home,
         };
     }
@@ -68,11 +68,25 @@ public partial class MainWindow : FluentWindow
             _vm.SelectAccentCommand.Execute(option);
     }
 
-    /// 下载页版本类型筛选(正式版 / 快照 / 愚人节 / 远古)
+    /// 下载页版本类型筛选(正式版 / 快照 / 愚人节 / 远古;枚举放 Uid,Tag 让给图标码点)
     private void OnVersionKindChecked(object sender, RoutedEventArgs e)
     {
-        if (sender is RadioButton { Tag: string tag } && Enum.TryParse<VersionKindFilter>(tag, out var kind))
+        if (sender is RadioButton { Uid: { Length: > 0 } uid } && Enum.TryParse<VersionKindFilter>(uid, out var kind))
             _vm.VersionKind = kind;
+    }
+
+    /// 版本同步:把版本设为隔离(走 Click 事件,列表项里的 RelativeSource 命令绑定有静默失效前例)
+    private void OnIsolateClick(object sender, RoutedEventArgs e)
+    {
+        if (sender is FrameworkElement { DataContext: VersionEntry version })
+            _vm.SetIsolated(version.Id, true);
+    }
+
+    /// 版本同步:把版本恢复为参与同步(共享游戏目录)
+    private void OnRestoreClick(object sender, RoutedEventArgs e)
+    {
+        if (sender is FrameworkElement { DataContext: VersionEntry version })
+            _vm.SetIsolated(version.Id, false);
     }
 
     private FrameworkElement? _currentPage;

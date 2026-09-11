@@ -30,6 +30,8 @@ public partial class App : Application
                 color = parsed;
             // 动画速度:在窗口解析前注入,保证 XAML 里的时长也取到倍率
             Motion.Motion.SetSpeed(settings.AnimationSpeed <= 0 ? 1.0 : settings.AnimationSpeed);
+            // 界面语言:主窗口创建前挂载语言包(S_* 动态资源随之可用)
+            Loc.Apply(settings.LauncherLanguage);
         }
         catch (Exception ex) { LogService.Error("读取设置失败", ex); }
         ApplicationAccentColorManager.Apply(color, ApplicationTheme.Dark);
