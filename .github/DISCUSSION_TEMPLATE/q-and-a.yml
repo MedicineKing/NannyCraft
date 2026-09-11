@@ -1,0 +1,24 @@
+title: "[问答] "
+labels: ["question"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        > 小提示:系统 / Java / 日志等信息,可以在启动器「关于 → 帮助与反馈」里一键带出,贴过来更方便定位。
+
+  - type: textarea
+    id: question
+    attributes:
+      label: 你想问什么
+      description: 描述卡住的地方、已经试过什么、期望的结果
+      placeholder: 例如:我装了 26.2,启动时提示缺 Java 25,机器上只有 Java 21,应该怎么处理?
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: 启动器版本(可选)
+      description: 关于页可见,例如 V0.2.0 SP0
+    validations:
+      required: false

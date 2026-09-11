@@ -1,0 +1,573 @@
+<ui:FluentWindow x:Class="McLauncher.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+        Title="NannyCraft" Height="680" Width="1080"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="CanMinimize" WindowBackdropType="None" ExtendsContentIntoTitleBar="True"
+        UseLayoutRounding="True"
+        TextOptions.TextFormattingMode="Display"
+        TextOptions.TextRenderingMode="ClearType"
+        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+        FontFamily="Microsoft YaHei UI, Segoe UI" FontSize="13.5">
+
+    <Grid x:Name="Root">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Fluent 标题栏:仅最小化/关闭,无最大化(ResizeMode=CanMinimize 同时禁掉双击放大) -->
+        <ui:TitleBar Grid.Row="0" Title="NannyCraft" ShowMaximize="False"/>
+
+        <!-- ═══ 主体:左侧导航 + 内容区 ═══ -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="212"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Border Grid.Column="0">
+                <Grid Margin="14,6,14,14">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Grid.Row="0">
+                        <RadioButton x:Name="NavHome" Style="{StaticResource NavItem}" GroupName="nav" Tag="&#xE80F;"
+                                     Content="主页" IsChecked="True" Checked="OnNavChecked"/>
+                        <RadioButton x:Name="NavDownload" Style="{StaticResource NavItem}" GroupName="nav" Tag="&#xE896;"
+                                     Content="下载" Margin="0,4,0,0" Checked="OnNavChecked"/>
+                        <RadioButton x:Name="NavSettings" Style="{StaticResource NavItem}" GroupName="nav" Tag="&#xE713;"
+                                     Content="设置" Margin="0,4,0,0" Checked="OnNavChecked"/>
+                        <RadioButton x:Name="NavAbout" Style="{StaticResource NavItem}" GroupName="nav" Tag="&#xE946;"
+                                     Content="关于" Margin="0,4,0,0" Checked="OnNavChecked"/>
+                    </StackPanel>
+
+                    <TextBlock Grid.Row="2" Style="{StaticResource Muted}"
+                               Text="{Binding VersionText, StringFormat='{}{0} · 本地优先'}" Margin="8,0,0,0"/>
+                </Grid>
+            </Border>
+
+            <!-- ═══ 右侧内容区 ═══ -->
+            <Grid Grid.Column="1" Margin="22,14,22,16">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0" Text="{Binding PageTitle}" FontSize="22" FontWeight="Bold" Margin="0,0,0,16"/>
+
+                <Grid Grid.Row="1" x:Name="PageHost">
+
+                    <!-- ── 主页 ── -->
+                    <Grid x:Name="PageHome">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Hero:背景图/渐变 + 选中版本 + 大启动键(SJMCL 式) -->
+                        <Border Grid.Row="0" CornerRadius="8" Margin="0,0,0,14" ClipToBounds="True">
+                            <Grid Height="186">
+                                <Rectangle Fill="{Binding HeroGradient}"/>
+                                <Rectangle Fill="{Binding HeroBrush}"/>
+                                <Rectangle>
+                                    <Rectangle.Fill>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                            <GradientStop Color="#E0141517" Offset="0"/>
+                                            <GradientStop Color="#66141517" Offset="0.72"/>
+                                            <GradientStop Color="#99141517" Offset="1"/>
+                                        </LinearGradientBrush>
+                                    </Rectangle.Fill>
+                                </Rectangle>
+
+                                <Grid Margin="26,0">
+                                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Left" MaxWidth="480">
+                                        <TextBlock Text="Minecraft" FontSize="13" Foreground="#9FB2D0"/>
+                                        <TextBlock Text="{Binding SelectedVersion.Id, TargetNullValue=未选择版本, FallbackValue=未选择版本}"
+                                                   FontSize="30" FontWeight="Bold" Foreground="White" Margin="0,2,0,0"
+                                                   TextTrimming="CharacterEllipsis"/>
+                                        <TextBlock Text="{Binding CheckText, TargetNullValue=从下面列表里选一个已安装的版本}"
+                                                   Foreground="#C9D2E0" TextWrapping="Wrap" Margin="0,8,0,0" MaxHeight="38"/>
+                                    </StackPanel>
+                                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Right" Width="230">
+                                        <ui:Button Appearance="Primary" Content="{Binding LaunchButtonText}"
+                                                   Command="{Binding LaunchCommand}" IsEnabled="{Binding CanLaunch}"
+                                                   Height="52" FontSize="15.5" FontWeight="SemiBold"/>
+                                    </StackPanel>
+                                </Grid>
+                            </Grid>
+                        </Border>
+
+                        <Grid Grid.Row="1">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="340"/>
+                            </Grid.ColumnDefinitions>
+
+                            <ui:Card Grid.Column="0" Padding="18" Margin="0,0,14,0" VerticalAlignment="Stretch" VerticalContentAlignment="Stretch">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+                                    <TextBlock Text="已安装的版本" Style="{StaticResource SectionTitle}"/>
+                                    <ListView Grid.Row="1"
+                                              ItemsSource="{Binding InstalledVersions}" SelectedItem="{Binding SelectedVersion}"
+                                              Background="Transparent" BorderThickness="0"
+                                              ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                                        <ListView.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <Border Width="36" Height="36" CornerRadius="8" Margin="0,0,12,0"
+                                                            Background="{DynamicResource ControlFillColorDefaultBrush}">
+                                                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE7FC;" FontSize="16"
+                                                                   HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                                   Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                                    </Border>
+                                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <TextBlock Text="{Binding Id}" FontWeight="SemiBold"
+                                                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                                            <Border Style="{StaticResource TypeChip}">
+                                                                <TextBlock Style="{StaticResource TypeChipText}" Text="{Binding DisplayType}"/>
+                                                            </Border>
+                                                        </StackPanel>
+                                                        <TextBlock Style="{StaticResource Muted}" Text="{Binding ReleaseTime, StringFormat=yyyy-MM-dd}"/>
+                                                    </StackPanel>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ListView.ItemTemplate>
+                                    </ListView>
+                                    <StackPanel Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center"
+                                                Visibility="{Binding ShowEmptyState, Converter={StaticResource BoolToVis}}">
+                                        <TextBlock FontSize="15" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextAlignment="Center">
+                                            你还没有安装 Minecraft 哦,先去<Hyperlink Click="OnInstallLinkClick" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}">安装</Hyperlink>吧
+                                        </TextBlock>
+                                        <TextBlock Style="{StaticResource Muted}" HorizontalAlignment="Center" Margin="0,10,0,0"
+                                                   Text="到「下载」页挑一个版本,一键装好就会出现在这里"/>
+                                    </StackPanel>
+                                </Grid>
+                            </ui:Card>
+
+                            <ui:Card x:Name="DetailCard" Grid.Column="1" Padding="18" VerticalAlignment="Stretch" VerticalContentAlignment="Stretch">
+                                <Grid>
+                                    <!-- 已选中版本:详情 + 补全 -->
+                                    <StackPanel Visibility="{Binding HasSelectedVersion, Converter={StaticResource BoolToVis}}">
+                                        <TextBlock Text="游戏详情" Style="{StaticResource SectionTitle}"/>
+                                        <TextBlock Text="{Binding SelectedVersion.Id}" FontSize="19" FontWeight="Bold"
+                                                   TextTrimming="CharacterEllipsis"/>
+                                        <TextBlock Style="{StaticResource Muted}" Text="{Binding JavaHint}" Margin="0,8,0,0"
+                                                   TextWrapping="Wrap"/>
+                                        <TextBlock Style="{StaticResource Muted}" Text="{Binding CheckText}"
+                                                   TextWrapping="Wrap" Margin="0,10,0,0" MinHeight="36"/>
+                                        <ui:Button Appearance="Secondary" Content="一键补全" Height="36"
+                                                   Command="{Binding InstallCommand}" Margin="0,16,0,0"/>
+                                        <ui:Button Appearance="Secondary" Content="打开游戏目录" Height="36"
+                                                   Command="{Binding OpenGameFolderCommand}" Margin="0,10,0,0"/>
+                                    </StackPanel>
+
+                                    <!-- 未选版本:今日 MC 快讯 -->
+                                    <Grid Visibility="{Binding ShowNewsPanel, Converter={StaticResource BoolToVis}}">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="*"/>
+                                        </Grid.RowDefinitions>
+                                        <TextBlock Text="今日 MC 快讯" Style="{StaticResource SectionTitle}"/>
+                                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                                            <ItemsControl ItemsSource="{Binding News}">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <StackPanel Margin="0,0,0,14">
+                                                            <TextBlock Text="{Binding Title}" FontWeight="SemiBold"
+                                                                       TextTrimming="CharacterEllipsis"/>
+                                                            <TextBlock Style="{StaticResource Muted}" Text="{Binding Date}" Margin="0,2,0,0"/>
+                                                            <TextBlock Style="{StaticResource Muted}" Text="{Binding Summary}"
+                                                                       TextWrapping="Wrap" MaxHeight="44" Margin="0,4,0,0"/>
+                                                        </StackPanel>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </ScrollViewer>
+                                    </Grid>
+
+                                    <!-- 未选版本且关闭快讯 -->
+                                    <TextBlock Style="{StaticResource Muted}" Text="选择版本查看详情"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"
+                                               Visibility="{Binding ShowIdleHint, Converter={StaticResource BoolToVis}}"/>
+                                </Grid>
+                            </ui:Card>
+                        </Grid>
+                    </Grid>
+
+                    <!-- ── 下载 ── -->
+                    <Grid x:Name="PageDownload" Visibility="Collapsed">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="360"/>
+                        </Grid.ColumnDefinitions>
+
+                        <ui:Card Grid.Column="0" Padding="18" Margin="0,0,14,0" VerticalAlignment="Stretch" VerticalContentAlignment="Stretch">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+                                <TextBlock Text="选择一个要安装的版本" Style="{StaticResource SectionTitle}"/>
+                                <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,12">
+                                    <RadioButton Style="{StaticResource FilterChip}" GroupName="vkind" Content="正式版"
+                                                 IsChecked="True" Tag="Release" Checked="OnVersionKindChecked"/>
+                                    <RadioButton Style="{StaticResource FilterChip}" GroupName="vkind" Content="快照版"
+                                                 Tag="Snapshot" Margin="8,0,0,0" Checked="OnVersionKindChecked"/>
+                                    <RadioButton Style="{StaticResource FilterChip}" GroupName="vkind" Content="愚人节版"
+                                                 Tag="AprilFools" Margin="8,0,0,0" Checked="OnVersionKindChecked"/>
+                                    <RadioButton Style="{StaticResource FilterChip}" GroupName="vkind" Content="远古版本"
+                                                 Tag="Ancient" Margin="8,0,0,0" Checked="OnVersionKindChecked"/>
+                                </StackPanel>
+                                <ListView Grid.Row="2"
+                                          ItemsSource="{Binding Versions}" SelectedItem="{Binding SelectedVersion}"
+                                          Background="Transparent" BorderThickness="0"
+                                          ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                                    <ListView.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Id}" FontWeight="SemiBold"
+                                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                        </DataTemplate>
+                                    </ListView.ItemTemplate>
+                                </ListView>
+                            </Grid>
+                        </ui:Card>
+
+                        <ui:Card Grid.Column="1" Padding="18" VerticalAlignment="Stretch" VerticalContentAlignment="Stretch">
+                            <Grid>
+                                <!-- 已选中版本:安装面板 -->
+                                <StackPanel Visibility="{Binding HasSelectedVersion, Converter={StaticResource BoolToVis}}">
+                                    <TextBlock Text="安装" Style="{StaticResource SectionTitle}"/>
+                                    <TextBlock Text="{Binding SelectedVersion.Id}" FontSize="19" FontWeight="Bold"
+                                               Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                               TextTrimming="CharacterEllipsis"/>
+                                    <TextBlock Style="{StaticResource Muted}" Text="{Binding JavaHint}" Margin="0,8,0,0"/>
+                                    <ProgressBar Height="6" Margin="0,16,0,0" Value="{Binding Progress}" Maximum="100"
+                                                 Visibility="{Binding ShowProgress, Converter={StaticResource BoolToVis}}"/>
+                                    <ui:Button Appearance="Primary" Content="安装" Height="34" FontSize="13.5"
+                                               HorizontalAlignment="Left" MinWidth="132"
+                                               Command="{Binding InstallCommand}" Margin="0,14,0,0"/>
+                                    <TextBlock Style="{StaticResource Muted}" TextWrapping="Wrap" Margin="0,14,0,0"
+                                               Text="一键装齐:客户端 + 库文件 + 原生库(自动解压)+ 资源对象树 + 日志配置;全部 SHA-1 校验,已存在则跳过。"/>
+                                </StackPanel>
+
+                                <!-- 未选版本:提示 -->
+                                <StackPanel Visibility="{Binding HasNoSelection, Converter={StaticResource BoolToVis}}"
+                                            VerticalAlignment="Center" HorizontalAlignment="Center">
+                                    <TextBlock Style="{StaticResource Muted}" TextAlignment="Center" TextWrapping="Wrap"
+                                               MaxWidth="230" LineHeight="20"
+                                               Text="你还没有选择要安装的版本哦,选择完成才可以安装"/>
+                                </StackPanel>
+                            </Grid>
+                        </ui:Card>
+                    </Grid>
+
+                    <!-- ── 设置 ── -->
+                    <ScrollViewer x:Name="PageSettings" Visibility="Collapsed" VerticalScrollBarVisibility="Auto">
+                        <StackPanel MaxWidth="720" HorizontalAlignment="Left" Margin="0,0,14,0">
+                            <ui:Card Padding="18">
+                                <StackPanel>
+                                    <TextBlock Text="游戏" Style="{StaticResource SectionTitle}"/>
+
+                                    <TextBlock Style="{StaticResource SettingLabel}" Text="最大内存(启动参数 -Xmx)"/>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Slider Minimum="1024" Maximum="16384" TickFrequency="512" IsSnapToTickEnabled="True"
+                                                Value="{Binding MaxMemoryMb}" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="1" Margin="14,0,0,0" VerticalAlignment="Center" MinWidth="72"
+                                                   TextAlignment="Right"
+                                                   Text="{Binding MaxMemoryMb, StringFormat='{}{0} MB'}"/>
+                                    </Grid>
+
+                                    <TextBlock Style="{StaticResource SettingLabel}" Text="游戏目录"/>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBox Text="{Binding GameRoot}"/>
+                                        <ui:Button Grid.Column="1" Appearance="Secondary" Content="打开" MinWidth="72"
+                                                   Margin="10,0,0,0" Command="{Binding OpenGameFolderCommand}"/>
+                                    </Grid>
+
+                                    <TextBlock Style="{StaticResource SettingLabel}" Text="用户名(离线模式)"/>
+                                    <TextBox Text="{Binding Username}"/>
+
+                                    <TextBlock Style="{StaticResource SettingLabel}" Text="下载并发数"/>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Slider Minimum="16" Maximum="1024" TickFrequency="16" IsSnapToTickEnabled="True"
+                                                Value="{Binding DownloadConcurrency}" VerticalAlignment="Center"
+                                                IsEnabled="{Binding ManualConcurrencyEnabled}"/>
+                                        <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="14,0,0,0"
+                                                    VerticalAlignment="Center">
+                                            <CheckBox Content="自动" IsChecked="{Binding AutoConcurrency}"/>
+                                            <TextBlock Margin="12,0,0,0" MinWidth="36" TextAlignment="Right"
+                                                       VerticalAlignment="Center" Text="{Binding EffectiveConcurrency}"/>
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <TextBlock Style="{StaticResource SettingLabel}" Text="Java"/>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <ComboBox ItemsSource="{Binding Javas}" SelectedItem="{Binding SelectedJava}">
+                                            <ComboBox.ItemTemplate>
+                                                <DataTemplate>
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <TextBlock Text="{Binding Version, StringFormat='Java {0}'}" FontWeight="SemiBold"/>
+                                                        <TextBlock Style="{StaticResource Muted}" Text="{Binding SourceText}" Margin="8,0,0,0"/>
+                                                        <TextBlock Style="{StaticResource Muted}" Text="{Binding Home}" Margin="8,0,0,0"
+                                                                   MaxWidth="240" TextTrimming="CharacterEllipsis"/>
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                            </ComboBox.ItemTemplate>
+                                        </ComboBox>
+                                        <ui:Button Grid.Column="1" Appearance="Secondary" Content="手动添加…" MinWidth="96"
+                                                   Margin="10,0,0,0" Command="{Binding AddJavaCommand}"/>
+                                    </Grid>
+
+                                    <TextBlock Style="{StaticResource SettingLabel}" Text="附加 JVM 参数(可选)"/>
+                                    <TextBox Text="{Binding JvmArgs}" ToolTip="例如 -XX:+UseG1GC"/>
+
+                                    <Grid Margin="0,18,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <ui:Button Appearance="Primary" Content="保存设置" Height="38"
+                                                   Command="{Binding SaveSettingsCommand}"/>
+                                        <TextBlock Grid.Column="1" Style="{StaticResource Muted}" Text="{Binding SettingsSavedHint}"
+                                                   VerticalAlignment="Center" Margin="14,0,0,0" TextWrapping="Wrap"/>
+                                    </Grid>
+                                </StackPanel>
+                            </ui:Card>
+
+                            <ui:Card Padding="18" Margin="0,14,0,0">
+                                <StackPanel>
+                                    <TextBlock Text="外观" Style="{StaticResource SectionTitle}"/>
+
+                                    <TextBlock Style="{StaticResource SettingLabel}" Text="主题色"/>
+                                    <ItemsControl ItemsSource="{Binding AccentOptions}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <StackPanel Orientation="Horizontal"/>
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <RadioButton GroupName="accent" Margin="0,0,12,0" Cursor="Hand"
+                                                             ToolTip="{Binding Name}"
+                                                             IsChecked="{Binding IsSelected, Mode=OneWay}"
+                                                             Checked="OnAccentChecked">
+                                                    <RadioButton.Template>
+                                                        <ControlTemplate TargetType="RadioButton">
+                                                            <Grid Width="30" Height="30" Background="Transparent">
+                                                                <Ellipse x:Name="ring" Stroke="{DynamicResource TextFillColorPrimaryBrush}"
+                                                                         StrokeThickness="2" Opacity="0" Margin="-4"/>
+                                                                <Ellipse Fill="{Binding Brush}"/>
+                                                            </Grid>
+                                                            <ControlTemplate.Triggers>
+                                                                <Trigger Property="IsChecked" Value="True">
+                                                                    <Setter TargetName="ring" Property="Opacity" Value="1"/>
+                                                                </Trigger>
+                                                                <Trigger Property="IsMouseOver" Value="True">
+                                                                    <Setter TargetName="ring" Property="Opacity" Value="0.45"/>
+                                                                </Trigger>
+                                                            </ControlTemplate.Triggers>
+                                                        </ControlTemplate>
+                                                    </RadioButton.Template>
+                                                </RadioButton>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                    <TextBlock Style="{StaticResource Muted}" Margin="0,8,0,0"
+                                               Text="主题色会应用到按钮、选中态与窗口控件"/>
+
+                                    <TextBlock Style="{StaticResource SettingLabel}" Text="主页背景图"/>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBox Text="{Binding BackgroundImage, Mode=OneWay}" IsReadOnly="True"/>
+                                        <ui:Button Grid.Column="1" Appearance="Secondary" Content="选择…" MinWidth="72"
+                                                   Margin="10,0,0,0" Command="{Binding ChooseBackgroundCommand}"/>
+                                        <ui:Button Grid.Column="2" Appearance="Secondary" Content="清除" MinWidth="72"
+                                                   Margin="10,0,0,0" Command="{Binding ClearBackgroundCommand}"/>
+                                    </Grid>
+                                    <TextBlock Style="{StaticResource Muted}" Margin="0,8,0,0"
+                                               Text="支持 PNG / JPG / BMP,图片铺在主页顶部;不选则用默认渐变"/>
+
+                                    <TextBlock Style="{StaticResource SettingLabel}" Text="动画速度"/>
+                                    <ComboBox ItemsSource="{Binding AnimationSpeeds}" SelectedItem="{Binding SelectedAnimationSpeed}"
+                                              MaxWidth="220" HorizontalAlignment="Left">
+                                        <ComboBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding Name}"/>
+                                            </DataTemplate>
+                                        </ComboBox.ItemTemplate>
+                                    </ComboBox>
+                                    <TextBlock Style="{StaticResource Muted}" Margin="0,8,0,0"
+                                               Text="始终遵循系统「减少动画」开关;页面转场立即生效,控件动效重启后生效"/>
+
+                                    <TextBlock Style="{StaticResource Muted}" Margin="0,10,0,0"
+                                               Text="快讯的源 / 代理 / 翻译在「资讯」卡片里配置"/>
+                                </StackPanel>
+                            </ui:Card>
+
+                            <ui:Card Padding="18" Margin="0,14,0,0">
+                                <StackPanel>
+                                    <TextBlock Text="资讯" Style="{StaticResource SectionTitle}"/>
+
+                                    <TextBlock Style="{StaticResource SettingLabel}" Text="资讯源地址(留空 = 官方源;可填本机转发 / 镜像)"/>
+                                    <TextBox Text="{Binding NewsSourceUrl}"
+                                             ToolTip="默认 https://launchercontent.mojang.com/v2/javaPatchNotes.json"/>
+
+                                    <TextBlock Style="{StaticResource SettingLabel}" Text="资讯代理(可选,如 http://127.0.0.1:7890;翻译走同一代理)"/>
+                                    <TextBox Text="{Binding NewsProxy}"/>
+
+                                    <CheckBox Content="自动翻译快讯(英文 → 简体中文)" IsChecked="{Binding NewsTranslate}"
+                                              Margin="0,14,0,0"/>
+                                    <CheckBox Content="主页未选版本时显示「今日 MC 快讯」" IsChecked="{Binding ShowNewsOnIdle}"
+                                              Margin="0,8,0,0"/>
+
+                                    <TextBlock Style="{StaticResource SettingLabel}" Text="反馈仓库地址(留空 = 官方仓库 MedicineKing/NannyCraft)"/>
+                                    <TextBox Text="{Binding FeedbackRepo}"
+                                             ToolTip="例如 https://github.com/MedicineKing/NannyCraft"/>
+
+                                    <TextBlock Style="{StaticResource Muted}" Margin="0,8,0,0"
+                                               Text="改完点「保存设置」重新拉取;任何环节失败都不影响启动器使用"/>
+                                </StackPanel>
+                            </ui:Card>
+
+                            <ui:Card Padding="18" Margin="0,14,0,0">
+                                <StackPanel>
+                                    <TextBlock Text="版本与更新" Style="{StaticResource SectionTitle}"/>
+
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="86"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition/>
+                                            <RowDefinition/>
+                                            <RowDefinition/>
+                                        </Grid.RowDefinitions>
+                                        <TextBlock Style="{StaticResource Muted}" Text="版本号" Margin="0,4"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding VersionText}" FontWeight="SemiBold" Margin="0,4"/>
+                                        <TextBlock Grid.Row="1" Style="{StaticResource Muted}" Text="构建日期" Margin="0,4"/>
+                                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding BuildDateText}" Margin="0,4"/>
+                                        <TextBlock Grid.Row="2" Style="{StaticResource Muted}" Text="安装日期" Margin="0,4"/>
+                                        <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding InstallDate}" Margin="0,4"/>
+                                    </Grid>
+
+                                    <TextBlock Style="{StaticResource SettingLabel}" Text="更新通道"/>
+                                    <ComboBox ItemsSource="{Binding Channels}" SelectedItem="{Binding SelectedChannel}"
+                                              MaxWidth="220" HorizontalAlignment="Left">
+                                        <ComboBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding Name}"/>
+                                            </DataTemplate>
+                                        </ComboBox.ItemTemplate>
+                                    </ComboBox>
+
+                                    <Grid Margin="0,18,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <ui:Button Appearance="Secondary" Content="检查更新" Height="38" MinWidth="96"
+                                                   Command="{Binding CheckUpdateCommand}"/>
+                                        <TextBlock Grid.Column="1" Style="{StaticResource Muted}" Text="{Binding UpdateStatus}"
+                                                   VerticalAlignment="Center" Margin="14,0,0,0" TextWrapping="Wrap"/>
+                                    </Grid>
+                                </StackPanel>
+                            </ui:Card>
+                        </StackPanel>
+                    </ScrollViewer>
+
+                    <!-- ── 关于 ── -->
+                    <ScrollViewer x:Name="PageAbout" Visibility="Collapsed" VerticalScrollBarVisibility="Auto">
+                        <StackPanel MaxWidth="720" HorizontalAlignment="Left" Margin="0,0,14,0">
+                            <ui:Card Padding="18">
+                                <StackPanel>
+                                    <TextBlock Text="NannyCraft" FontSize="22" FontWeight="Bold"/>
+                                    <TextBlock Style="{StaticResource Muted}" Text="{Binding VersionText, StringFormat='{}{0} · 你只管点开始,剩下的交给 NannyCraft'}" Margin="0,4,0,0"/>
+                                    <TextBlock TextWrapping="Wrap" Margin="0,14,0,0" LineHeight="21"
+                                               Text="一个懒人向的 Minecraft 启动器:零配置决策、坏了自己修、附带服主与联机工具箱。"/>
+                                    <TextBlock TextWrapping="Wrap" Margin="0,10,0,0" LineHeight="21"
+                                               Text="· 非官方产品,与 Mojang / Microsoft 无关联;&#x000A;· 零遥测、零数据收集,所有配置与文件都在你自己手里;&#x000A;· 启动所需的 Java 由你本机提供(官方 javaVersion 映射选 JDK)。"/>
+                                    <TextBlock Style="{StaticResource Muted}" TextWrapping="Wrap" Margin="0,14,0,0"
+                                               Text="技术栈:.NET 8 · WPF · WPF-UI(Fluent)· MVVM;动效遵循 Apple HIG 与 HarmonyOS 规范(150/220/350ms,支持系统减少动画)。"/>
+                                    <TextBlock Style="{StaticResource Muted}" Text="{Binding RenderInfo}" Margin="0,6,0,0"/>
+                                </StackPanel>
+                            </ui:Card>
+
+                            <ui:Card Padding="18" Margin="0,14,0,0">
+                                <StackPanel>
+                                    <TextBlock Text="帮助与反馈" Style="{StaticResource SectionTitle}"/>
+                                    <TextBlock Style="{StaticResource Muted}" TextWrapping="Wrap" Margin="0,0,0,12"
+                                               Text="反馈会跳到 GitHub Issues:环境信息(系统 / 硬件 / 运行环境)与运行日志已自动填好,崩溃日志(若有)一并附上,提交前可自行编辑。"/>
+                                    <StackPanel Orientation="Horizontal">
+                                        <ui:Button Appearance="Primary" Content="报告 Bug" Height="38"
+                                                   Command="{Binding ReportBugCommand}"/>
+                                        <ui:Button Appearance="Secondary" Content="功能建议" Height="38"
+                                                   Command="{Binding SuggestIdeaCommand}" Margin="10,0,0,0"/>
+                                        <ui:Button Appearance="Secondary" Content="打开日志目录" Height="38"
+                                                   Command="{Binding OpenLogFolderCommand}" Margin="10,0,0,0"/>
+                                    </StackPanel>
+                                    <TextBlock Style="{StaticResource Muted}" Text="{Binding LauncherIdText}" Margin="0,12,0,0"/>
+                                </StackPanel>
+                            </ui:Card>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Grid>
+
+                <!-- 底栏:状态 + 进度 -->
+                <Grid Grid.Row="2" Margin="0,16,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Ellipse Width="6" Height="6" Fill="{DynamicResource AccentFillColorDefaultBrush}" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Column="1" Text="{Binding StatusText}" Margin="8,0,0,0"
+                                   VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                    </Grid>
+                    <ProgressBar Grid.Column="1" Width="220" Height="6" VerticalAlignment="Center"
+                                 Value="{Binding Progress}" Maximum="100"
+                                 Visibility="{Binding ShowProgress, Converter={StaticResource BoolToVis}}"/>
+                </Grid>
+            </Grid>
+        </Grid>
+    </Grid>
+</ui:FluentWindow>

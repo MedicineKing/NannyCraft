@@ -1,0 +1,9 @@
+labels: ["showcase"]
+body:
+  - type: textarea
+    id: show
+    attributes:
+      label: 展示内容
+      description: 用 NannyCraft 玩的存档、生电装置、整合包、整活……随便来,配图更好
+    validations:
+      required: true

@@ -1,0 +1,54 @@
+name: Bug 报告
+description: 启动器出问题了?按这个模板提交,附上日志更好定位
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        > 小提示:启动器内「关于 → 帮助与反馈 → 报告 Bug」会自动带上环境信息与日志,更省事。
+
+  - type: textarea
+    id: what
+    attributes:
+      label: 问题描述
+      description: 发生了什么?你期望的是什么?
+      placeholder: 例如:点「安装」后进度卡在资源文件,窗口可以操作但进度不动
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: 复现步骤
+      placeholder: |
+        1. 打开……
+        2. 点击……
+        3. 出现……
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: 启动器版本
+      description: 关于页可见,例如 V0.2.0 SP0
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: 日志
+      description: 启动器内「关于 → 打开日志目录」,把 latest.log(或 crash-*.log)的内容贴进来;没有也可以提交
+      render: text
+    validations:
+      required: false
+
+  - type: input
+    id: env
+    attributes:
+      label: 系统 / 硬件
+      description: 系统版本、CPU、内存、Java 版本等;用启动器内的反馈入口会自动填好
+    validations:
+      required: false

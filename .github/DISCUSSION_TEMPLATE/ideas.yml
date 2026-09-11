@@ -1,0 +1,23 @@
+title: "[想法] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        > 想清楚的小功能建议也欢迎直接开 Issue(更接近待办);这里更适合开放讨论"要不要做 / 怎么做"。
+
+  - type: textarea
+    id: idea
+    attributes:
+      label: 想法
+      description: 想加什么?解决什么问题?希望它怎么工作?
+    validations:
+      required: true
+
+  - type: textarea
+    id: scene
+    attributes:
+      label: 使用场景(可选)
+      description: 你平时怎么玩 MC(单人 / 生电服 / 开服),帮我们判断优先级
+    validations:
+      required: false

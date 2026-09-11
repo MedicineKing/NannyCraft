@@ -1,0 +1,28 @@
+name: 功能建议
+description: 想加什么功能?哪里可以更顺手?
+title: "[建议] "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: 你的想法
+      description: 想解决什么问题?希望它怎么工作?
+    validations:
+      required: true
+
+  - type: textarea
+    id: scene
+    attributes:
+      label: 使用场景(可选)
+      description: 你平时怎么玩 MC(单人 / 生电服 / 开服)?帮我们判断优先级
+    validations:
+      required: false
+
+  - type: textarea
+    id: alternative
+    attributes:
+      label: 其他方案(可选)
+      description: 你现在是怎么绕过这个问题的?
+    validations:
+      required: false
