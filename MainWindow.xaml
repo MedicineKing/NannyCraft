@@ -289,9 +289,39 @@
                         </ui:Card>
                     </Grid>
 
-                    <!-- ── 设置 ── -->
-                    <ScrollViewer x:Name="PageSettings" Visibility="Collapsed" VerticalScrollBarVisibility="Auto">
-                        <StackPanel MaxWidth="720" HorizontalAlignment="Left" Margin="0,0,14,0">
+                    <!-- ── 设置(PCL 式左列分类 + 右侧内容) ── -->
+                    <Grid x:Name="PageSettings" Visibility="Collapsed">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- 左列分类(复用导航项样式;Uid=分类,Tag=图标码点) -->
+                        <StackPanel Grid.Row="0" Grid.Column="0" Width="158" Margin="0,0,14,0">
+                            <RadioButton Style="{StaticResource NavItem}" GroupName="setcat" Height="36" Uid="Game"
+                                         Tag="&#xE7FC;" Content="{DynamicResource S_SetCat_Game}" IsChecked="True"
+                                         Checked="OnSettingsCategoryChecked"/>
+                            <RadioButton Style="{StaticResource NavItem}" GroupName="setcat" Height="36" Uid="Look"
+                                         Tag="&#xE790;" Content="{DynamicResource S_SetCat_Look}" Margin="0,4,0,0"
+                                         Checked="OnSettingsCategoryChecked"/>
+                            <RadioButton Style="{StaticResource NavItem}" GroupName="setcat" Height="36" Uid="Isolate"
+                                         Tag="&#xE8AB;" Content="{DynamicResource S_SetCat_Isolate}" Margin="0,4,0,0"
+                                         Checked="OnSettingsCategoryChecked"/>
+                            <RadioButton Style="{StaticResource NavItem}" GroupName="setcat" Height="36" Uid="News"
+                                         Tag="&#xE716;" Content="{DynamicResource S_SetCat_News}" Margin="0,4,0,0"
+                                         Checked="OnSettingsCategoryChecked"/>
+                            <RadioButton Style="{StaticResource NavItem}" GroupName="setcat" Height="36" Uid="Update"
+                                         Tag="&#xE895;" Content="{DynamicResource S_SetCat_Update}" Margin="0,4,0,0"
+                                         Checked="OnSettingsCategoryChecked"/>
+                        </StackPanel>
+
+                        <ScrollViewer Grid.Row="0" Grid.Column="1" VerticalScrollBarVisibility="Auto">
+                            <StackPanel MaxWidth="720" HorizontalAlignment="Left" Margin="0,0,14,0">
+                            <StackPanel x:Name="SetCatGame">
                             <ui:Card Padding="18">
                                 <StackPanel>
                                     <TextBlock Text="{DynamicResource S_Game}" Style="{StaticResource SectionTitle}"/>
@@ -314,41 +344,33 @@
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
-                                        <TextBox Text="{Binding GameRoot}"/>
-                                        <ui:Button Grid.Column="1" Appearance="Secondary" Content="{DynamicResource S_Open}" MinWidth="72"
+                                        <TextBox Text="{Binding GameRoot}" IsReadOnly="True"/>
+                                        <ui:Button Grid.Column="1" Appearance="Secondary" Content="{DynamicResource S_Choose}" MinWidth="72"
+                                                   Margin="10,0,0,0" Command="{Binding ChooseGameFolderCommand}"/>
+                                        <ui:Button Grid.Column="2" Appearance="Secondary" Content="{DynamicResource S_Open}" MinWidth="72"
                                                    Margin="10,0,0,0" Command="{Binding OpenGameFolderCommand}"/>
                                     </Grid>
 
                                     <TextBlock Style="{StaticResource SettingLabel}" Text="{DynamicResource S_Username}"/>
                                     <TextBox Text="{Binding Username}"/>
 
-                                    <TextBlock Style="{StaticResource SettingLabel}" Text="{DynamicResource S_LauncherLang}"/>
-                                    <ComboBox ItemsSource="{Binding LauncherLanguages}" SelectedItem="{Binding SelectedLanguage}"
-                                              MaxWidth="220" HorizontalAlignment="Left">
-                                        <ComboBox.ItemTemplate>
-                                            <DataTemplate>
-                                                <TextBlock Text="{Binding Name}"/>
-                                            </DataTemplate>
-                                        </ComboBox.ItemTemplate>
-                                    </ComboBox>
+                                    <CheckBox Content="{DynamicResource S_RememberLast}" IsChecked="{Binding RememberLastVersion}"
+                                              Margin="0,14,0,0"/>
+                                    <TextBlock Style="{StaticResource Muted}" Margin="0,6,0,0" TextWrapping="Wrap"
+                                               Text="{DynamicResource S_RememberLastHint}"/>
 
                                     <TextBlock Style="{StaticResource SettingLabel}" Text="{DynamicResource S_DownloadConcurrency}"/>
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                        </Grid.ColumnDefinitions>
-                                        <Slider Minimum="16" Maximum="1024" TickFrequency="16" IsSnapToTickEnabled="True"
-                                                Value="{Binding DownloadConcurrency}" VerticalAlignment="Center"
-                                                IsEnabled="{Binding ManualConcurrencyEnabled}"/>
-                                        <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="14,0,0,0"
-                                                    VerticalAlignment="Center">
-                                            <CheckBox Content="{DynamicResource S_Auto}" IsChecked="{Binding AutoConcurrency}"/>
-                                            <TextBlock Margin="12,0,0,0" MinWidth="36" TextAlignment="Right"
-                                                       VerticalAlignment="Center" Text="{Binding EffectiveConcurrency}"/>
-                                        </StackPanel>
-                                    </Grid>
+                                    <Slider Minimum="16" Maximum="1024" TickFrequency="16" IsSnapToTickEnabled="True"
+                                            Value="{Binding DownloadConcurrency}"
+                                            IsEnabled="{Binding ManualConcurrencyEnabled}"/>
+                                    <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                                        <CheckBox Content="{DynamicResource S_Auto}" IsChecked="{Binding AutoConcurrency}"
+                                                  VerticalAlignment="Center"/>
+                                        <TextBlock Style="{StaticResource Muted}" Margin="14,0,0,0" VerticalAlignment="Center"
+                                                   Text="{Binding EffectiveConcurrencyText}"/>
+                                    </StackPanel>
 
                                     <TextBlock Style="{StaticResource SettingLabel}" Text="Java"/>
                                     <Grid>
@@ -372,31 +394,30 @@
                                                    Margin="10,0,0,0" Command="{Binding AddJavaCommand}"/>
                                     </Grid>
 
-                                    <CheckBox Content="{DynamicResource S_MirrorToggle}"
-                                              IsChecked="{Binding UseTunaJdkMirror}" Margin="0,12,0,0"/>
-
                                     <TextBlock Style="{StaticResource SettingLabel}" Text="{DynamicResource S_JvmArgsLabel}"/>
                                     <TextBox Text="{Binding JvmArgs}" ToolTip="例如 -XX:+UseG1GC"/>
 
-                                    <Grid Margin="0,18,0,0">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto"/>
-                                            <ColumnDefinition Width="*"/>
-                                        </Grid.ColumnDefinitions>
-                                        <ui:Button Appearance="Primary" Content="{DynamicResource S_Save}" Height="38"
-                                                   Command="{Binding SaveSettingsCommand}"/>
-                                        <TextBlock Grid.Column="1" Style="{StaticResource Muted}" Text="{Binding SettingsSavedHint}"
-                                                   VerticalAlignment="Center" Margin="14,0,0,0" TextWrapping="Wrap"/>
-                                    </Grid>
                                 </StackPanel>
                             </ui:Card>
+                            </StackPanel><!-- /SetCatGame -->
 
+                            <StackPanel x:Name="SetCatLook" Visibility="Collapsed">
                             <ui:Card Padding="18" Margin="0,14,0,0">
                                 <StackPanel>
                                     <TextBlock Text="{DynamicResource S_Appearance}" Style="{StaticResource SectionTitle}"/>
 
+                                    <TextBlock Style="{StaticResource SettingLabel}" Text="{DynamicResource S_LauncherLang}"/>
+                                    <ComboBox ItemsSource="{Binding LauncherLanguages}" SelectedItem="{Binding SelectedLanguage}"
+                                              MaxWidth="220" HorizontalAlignment="Left">
+                                        <ComboBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding Name}"/>
+                                            </DataTemplate>
+                                        </ComboBox.ItemTemplate>
+                                    </ComboBox>
+
                                     <TextBlock Style="{StaticResource SettingLabel}" Text="{DynamicResource S_ThemeColor}"/>
-                                    <ItemsControl ItemsSource="{Binding AccentOptions}">
+                                    <ItemsControl ItemsSource="{Binding AccentOptions}" HorizontalAlignment="Left">
                                         <ItemsControl.ItemsPanel>
                                             <ItemsPanelTemplate>
                                                 <StackPanel Orientation="Horizontal"/>
@@ -404,7 +425,7 @@
                                         </ItemsControl.ItemsPanel>
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
-                                                <RadioButton GroupName="accent" Margin="0,0,12,0" Cursor="Hand"
+                                                <RadioButton GroupName="accent" Margin="0,0,12,0" Cursor="Hand" MinWidth="0" Padding="0"
                                                              ToolTip="{Binding Name}"
                                                              IsChecked="{Binding IsSelected, Mode=OneWay}"
                                                              Checked="OnAccentChecked">
@@ -464,7 +485,9 @@
                                                Text="{DynamicResource S_NewsCardHint}"/>
                                 </StackPanel>
                             </ui:Card>
+                            </StackPanel><!-- /SetCatLook -->
 
+                            <StackPanel x:Name="SetCatIsolate" Visibility="Collapsed">
                             <!-- ── 版本同步:两栏之间用按钮移动(不用 RelativeSource 命令绑定,走 Click 事件) ── -->
                             <ui:Card Padding="18" Margin="0,14,0,0">
                                 <StackPanel>
@@ -486,7 +509,7 @@
                                                                 <ColumnDefinition Width="Auto"/>
                                                             </Grid.ColumnDefinitions>
                                                             <TextBlock Text="{Binding Id}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
-                                                            <ui:Button Grid.Column="1" Appearance="Secondary" Height="28" MinWidth="86"
+                                                            <ui:Button Grid.Column="1" Appearance="Secondary" Height="32" MinWidth="86"
                                                                        Content="{DynamicResource S_ToIsolate}" Click="OnIsolateClick"/>
                                                         </Grid>
                                                     </DataTemplate>
@@ -504,7 +527,7 @@
                                                                 <ColumnDefinition Width="Auto"/>
                                                             </Grid.ColumnDefinitions>
                                                             <TextBlock Text="{Binding Id}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
-                                                            <ui:Button Grid.Column="1" Appearance="Secondary" Height="28" MinWidth="86"
+                                                            <ui:Button Grid.Column="1" Appearance="Secondary" Height="32" MinWidth="86"
                                                                        Content="{DynamicResource S_ToRestore}" Click="OnRestoreClick"/>
                                                         </Grid>
                                                     </DataTemplate>
@@ -514,7 +537,9 @@
                                     </Grid>
                                 </StackPanel>
                             </ui:Card>
+                            </StackPanel><!-- /SetCatIsolate -->
 
+                            <StackPanel x:Name="SetCatNews" Visibility="Collapsed">
                             <ui:Card Padding="18" Margin="0,14,0,0">
                                 <StackPanel>
                                     <TextBlock Text="{DynamicResource S_News}" Style="{StaticResource SectionTitle}"/>
@@ -526,20 +551,16 @@
                                     <TextBlock Style="{StaticResource SettingLabel}" Text="{DynamicResource S_NewsProxy}"/>
                                     <TextBox Text="{Binding NewsProxy}"/>
 
-                                    <CheckBox Content="{DynamicResource S_NewsTranslateToggle}" IsChecked="{Binding NewsTranslate}"
-                                              Margin="0,14,0,0"/>
                                     <CheckBox Content="{DynamicResource S_NewsShowToggle}" IsChecked="{Binding ShowNewsOnIdle}"
-                                              Margin="0,8,0,0"/>
+                                              Margin="0,14,0,0"/>
 
-                                    <TextBlock Style="{StaticResource SettingLabel}" Text="{DynamicResource S_FeedbackRepo}"/>
-                                    <TextBox Text="{Binding FeedbackRepo}"
-                                             ToolTip="例如 https://github.com/MedicineKing/NannyCraft"/>
-
-                                    <TextBlock Style="{StaticResource Muted}" Margin="0,8,0,0"
+                                    <TextBlock Style="{StaticResource Muted}" Margin="0,12,0,0"
                                                Text="{DynamicResource S_NewsHint}"/>
                                 </StackPanel>
                             </ui:Card>
+                            </StackPanel><!-- /SetCatNews -->
 
+                            <StackPanel x:Name="SetCatUpdate" Visibility="Collapsed">
                             <ui:Card Padding="18" Margin="0,14,0,0">
                                 <StackPanel>
                                     <TextBlock Text="{DynamicResource S_VersionUpdate}" Style="{StaticResource SectionTitle}"/>
@@ -572,20 +593,34 @@
                                         </ComboBox.ItemTemplate>
                                     </ComboBox>
 
-                                    <Grid Margin="0,18,0,0">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto"/>
-                                            <ColumnDefinition Width="*"/>
-                                        </Grid.ColumnDefinitions>
+                                    <StackPanel Orientation="Horizontal" Margin="0,18,0,0">
                                         <ui:Button Appearance="Secondary" Content="{DynamicResource S_CheckUpdate}" Height="38" MinWidth="96"
                                                    Command="{Binding CheckUpdateCommand}"/>
-                                        <TextBlock Grid.Column="1" Style="{StaticResource Muted}" Text="{Binding UpdateStatus}"
-                                                   VerticalAlignment="Center" Margin="14,0,0,0" TextWrapping="Wrap"/>
-                                    </Grid>
+                                        <ui:Button Appearance="Primary" Content="{DynamicResource S_ApplyUpdate}" Height="38" MinWidth="96"
+                                                   Margin="10,0,0,0" Command="{Binding ApplyUpdateCommand}"
+                                                   Visibility="{Binding UpdateAvailable, Converter={StaticResource BoolToVis}}"/>
+                                    </StackPanel>
+                                    <TextBlock Style="{StaticResource Muted}" Text="{Binding UpdateStatus}"
+                                               Margin="0,10,0,0" TextWrapping="Wrap"/>
                                 </StackPanel>
                             </ui:Card>
-                        </StackPanel>
-                    </ScrollViewer>
+                            </StackPanel><!-- /SetCatUpdate -->
+                            </StackPanel>
+                        </ScrollViewer>
+
+                        <!-- 全局「保存设置」栏:所有分类常驻可见;没有改动时置灰 -->
+                        <Grid Grid.Row="1" Grid.ColumnSpan="2" Margin="0,12,0,4">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <ui:Button Appearance="Primary" Content="{DynamicResource S_Save}" Height="38"
+                                       IsEnabled="{Binding SettingsDirty}"
+                                       Command="{Binding SaveSettingsCommand}"/>
+                            <TextBlock Grid.Column="1" Style="{StaticResource Muted}" Text="{Binding SettingsSavedHint}"
+                                       VerticalAlignment="Center" Margin="14,0,0,0" TextWrapping="Wrap"/>
+                        </Grid>
+                    </Grid>
 
                     <!-- ── 关于 ── -->
                     <ScrollViewer x:Name="PageAbout" Visibility="Collapsed" VerticalScrollBarVisibility="Auto">
@@ -614,6 +649,8 @@
                                                    Command="{Binding ReportBugCommand}"/>
                                         <ui:Button Appearance="Secondary" Content="{DynamicResource S_SuggestIdea}" Height="38"
                                                    Command="{Binding SuggestIdeaCommand}" Margin="10,0,0,0"/>
+                                        <ui:Button Appearance="Secondary" Content="{DynamicResource S_QQFeedback}" Height="38"
+                                                   Command="{Binding OpenQQGroupCommand}" Margin="10,0,0,0"/>
                                         <ui:Button Appearance="Secondary" Content="{DynamicResource S_OpenLogFolder}" Height="38"
                                                    Command="{Binding OpenLogFolderCommand}" Margin="10,0,0,0"/>
                                     </StackPanel>

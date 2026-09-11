@@ -54,6 +54,13 @@ public static class AppInfo
     /// 官方仓库(「帮助与反馈」跳转目标;设置里的「反馈仓库地址」可覆盖)
     public const string RepoUrl = "https://github.com/MedicineKing/NannyCraft";
 
+    /// QQ 群反馈链接(qm.qq.com 加群链接;留空 = 按钮提示"尚未配置")
+    public const string QQGroupUrl = "https://qm.qq.com/q/QHZpJaveSG";
+
+    /// 更新服务器基址(如 http://your-host:8789;留空 = 未配置,检查更新会提示)。
+    /// 部署后填入此处打包发布;设置里的「更新服务器地址」可临时覆盖(测试/自建)。
+    public const string UpdateBaseUrl = "";
+
     /// 构建标识:编译期由 版本号+构建日期 派生并"嵌进二进制"(同一构建恒定,不同构建不同)
     public static string BuildTag { get; } =
         Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(
@@ -61,7 +68,7 @@ public static class AppInfo
 
     public const int MajorVersion = 0;
     public const int KernelVersion = 2;
-    public const int UiVersion = 0;
+    public const int UiVersion = 1;
     public const int PatchLevel = 0;
 
     public static string VersionText => $"V{MajorVersion}.{KernelVersion}.{UiVersion} SP{PatchLevel}";

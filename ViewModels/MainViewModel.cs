@@ -15,6 +15,26 @@ public enum VersionKindFilter { Release, Snapshot, AprilFools, Ancient }
 /// 主视图模型:PCL2 式四页导航(主页 / 下载 / 设置 / 关于)。
 public partial class MainViewModel : ObservableObject
 {
+    /// 设置脏标记:有未保存的改动时「保存设置」才点亮(没改过=置灰)
+    [ObservableProperty] private bool _settingsDirty;
+    private bool _suppressDirty; // 加载期间的赋值不算"改动"
+
+    /// 只有经「保存设置」落盘的字段才参与脏标记(其余项是即改即存)
+    private static readonly HashSet<string> DirtyTrackedFields = new()
+    {
+        nameof(MaxMemoryMb), nameof(GameRoot), nameof(Username), nameof(JvmArgs),
+        nameof(NewsSourceUrl), nameof(NewsProxy), nameof(NewsTranslate), nameof(RememberLastVersion),
+    };
+
+    public MainViewModel()
+    {
+        PropertyChanged += (_, e) =>
+        {
+            if (!_suppressDirty && e.PropertyName != null && DirtyTrackedFields.Contains(e.PropertyName))
+                SettingsDirty = true;
+        };
+    }
+
     private readonly ManifestService _manifest = new();
     private readonly JavaService _java = new();
     private readonly LaunchService _launch = new();
@@ -115,7 +135,42 @@ public partial class MainViewModel : ObservableObject
             _settings.IsolatedVersions.RemoveAll(v => string.Equals(v, versionId, StringComparison.OrdinalIgnoreCase));
         SettingsStore.Save(_settings);
         LogService.Info($"{(isolated ? "启用" : "关闭")}版本隔离:{versionId}");
+        RefreshInstalled(); // 立即在两栏之间移动(重建列表并保持选中)
         RefreshCheck();
+    }
+
+    /// 默认游戏目录:优先用官方启动器的 .minecraft(PCL 同款策略),没有才回落自带目录
+    private static string DetectDefaultGameRoot()
+    {
+        try
+        {
+            var mc = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".minecraft");
+            if (Directory.Exists(mc)) return mc;
+        }
+        catch { /* 探测失败用默认 */ }
+        return SettingsStore.DefaultGameRoot;
+    }
+
+    /// 选择游戏目录(PCL 式文件夹选择器,不再手输路径)
+    [RelayCommand]
+    private void ChooseGameFolder()
+    {
+        var dialog = new Microsoft.Win32.OpenFolderDialog();
+        if (dialog.ShowDialog() == true) GameRoot = dialog.FolderName;
+    }
+
+    /// 清华镜像连通性自动探测(用户不再手选):通 → 内置 Java 下载走镜像,否则回退官方
+    private async Task ProbeTunaMirrorAsync()
+    {
+        try
+        {
+            using var http = new System.Net.Http.HttpClient { Timeout = TimeSpan.FromSeconds(4) };
+            using var resp = await http.SendAsync(new System.Net.Http.HttpRequestMessage(
+                System.Net.Http.HttpMethod.Get, "https://mirrors.tuna.tsinghua.edu.cn/"));
+            UseTunaJdkMirror = resp.IsSuccessStatusCode;
+        }
+        catch { UseTunaJdkMirror = false; }
+        LogService.Info($"清华镜像连通性探测:{UseTunaJdkMirror}");
     }
 
     // ── 主页 / 下载 ──
@@ -146,12 +201,15 @@ public partial class MainViewModel : ObservableObject
     public int AutoConcurrencyValue => Math.Clamp(Environment.ProcessorCount * 16, 64, 512);
     /// 实际生效的并发数
     public int EffectiveConcurrency => AutoConcurrency ? AutoConcurrencyValue : Math.Clamp(DownloadConcurrency, 16, 1024);
+    /// 实际并发数文案(带"线程"单位,随语言本地化)
+    public string EffectiveConcurrencyText => Loc.F("S_DlThreads", EffectiveConcurrency);
     /// 手动模式下滑杆才可用
     public bool ManualConcurrencyEnabled => !AutoConcurrency;
 
     partial void OnAutoConcurrencyChanged(bool value)
     {
         OnPropertyChanged(nameof(EffectiveConcurrency));
+        OnPropertyChanged(nameof(EffectiveConcurrencyText));
         OnPropertyChanged(nameof(ManualConcurrencyEnabled));
         _settings.DownloadConcurrency = value ? 0 : Math.Clamp(DownloadConcurrency, 16, 1024);
         SettingsStore.Save(_settings);
@@ -161,6 +219,7 @@ public partial class MainViewModel : ObservableObject
     {
         if (AutoConcurrency) return;
         OnPropertyChanged(nameof(EffectiveConcurrency));
+        OnPropertyChanged(nameof(EffectiveConcurrencyText));
         _settings.DownloadConcurrency = Math.Clamp(value, 16, 1024);
         SettingsStore.Save(_settings);
     }
@@ -233,10 +292,27 @@ public partial class MainViewModel : ObservableObject
     // ── 关于 · 帮助与反馈 ──
 
     [RelayCommand]
-    private void ReportBug() => OpenFeedback(FeedbackKind.Bug);
+    private async Task ReportBugAsync() => await OpenFeedbackAsync(FeedbackKind.Bug);
 
     [RelayCommand]
-    private void SuggestIdea() => OpenFeedback(FeedbackKind.Idea);
+    private async Task SuggestIdeaAsync() => await OpenFeedbackAsync(FeedbackKind.Idea);
+
+    /// QQ 群反馈:上不了 GitHub 的用户的备用通道
+    [RelayCommand]
+    private void OpenQQGroup()
+    {
+        if (string.IsNullOrWhiteSpace(AppInfo.QQGroupUrl))
+        {
+            StatusText = Loc.T("S_Fb_QQNotSet");
+            return;
+        }
+        try
+        {
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(AppInfo.QQGroupUrl) { UseShellExecute = true });
+            LogService.Info("打开 QQ 群反馈链接");
+        }
+        catch (Exception ex) { StatusText = Loc.F("S_Fb_OpenFailed", ex.Message); }
+    }
 
     [RelayCommand]
     private void OpenLogFolder()
@@ -246,11 +322,32 @@ public partial class MainViewModel : ObservableObject
             Directory.CreateDirectory(LogService.LogDir);
             System.Diagnostics.Process.Start("explorer.exe", LogService.LogDir);
         }
-        catch (Exception ex) { StatusText = "打开日志目录失败:" + ex.Message; }
+        catch (Exception ex) { StatusText = Loc.F("S_OpenLogFailed", ex.Message); }
     }
 
-    private void OpenFeedback(FeedbackKind kind)
+    /// 反馈入口:先过版本闸门(非最新版先引导更新——旧版本的问题可能已修),
+    /// 通过后打开预填好的 GitHub issue 页(环境/日志自动填;正文长度已做预算,不会触发 414)。
+    private async Task OpenFeedbackAsync(FeedbackKind kind)
     {
+        try
+        {
+            var check = await _update.CheckAsync(SelectedChannel?.Channel ?? UpdateChannel.Release, AppInfo.VersionText);
+            if (check.Checked && check.HasUpdate)
+            {
+                var go = System.Windows.MessageBox.Show(
+                    Loc.F("S_Fb_NeedUpdate", check.LatestVersion),
+                    Loc.T("S_Fb_NeedUpdateTitle"),
+                    System.Windows.MessageBoxButton.YesNo, System.Windows.MessageBoxImage.Warning);
+                if (go == System.Windows.MessageBoxResult.Yes)
+                {
+                    CurrentPage = AppPage.Settings; // 设置 → 版本与更新
+                    StatusText = Loc.T("S_Fb_UpdateFirst");
+                }
+                return;
+            }
+        }
+        catch { /* 检查失败(离线/服务器未就绪)→ 不拦截,直接放行 */ }
+
         var repo = FeedbackRepo.Trim();
         if (string.IsNullOrWhiteSpace(repo)) repo = AppInfo.RepoUrl;
         if (string.IsNullOrWhiteSpace(repo))
@@ -265,11 +362,11 @@ public partial class MainViewModel : ObservableObject
             var url = FeedbackService.BuildIssueUrl(repo, kind, LauncherId, javaText);
             System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(url) { UseShellExecute = true });
             LogService.Info($"打开反馈页({kind})");
-            StatusText = "已在浏览器打开 GitHub 反馈页(环境信息与日志已自动填充,提交前可编辑)";
+            StatusText = Loc.T("S_Fb_Opened");
         }
         catch (Exception ex)
         {
-            StatusText = "打开浏览器失败:" + ex.Message;
+            StatusText = Loc.F("S_Fb_OpenFailed", ex.Message);
         }
     }
     [ObservableProperty] private bool _showNewsPanel;
@@ -294,7 +391,11 @@ public partial class MainViewModel : ObservableObject
     {
         News.Clear();
         foreach (var item in await _news.GetLatestAsync(6, NewsSourceUrl, NewsProxy, NewsTranslate))
+        {
+            // 摘要截到 ~90 字,配合模板两行高度,避免中途硬切半句话
+            if (item.Summary.Length > 90) item.Summary = item.Summary[..90].TrimEnd() + "…";
             News.Add(item);
+        }
         UpdateIdlePanel();
     }
 
@@ -310,7 +411,11 @@ public partial class MainViewModel : ObservableObject
     };
     public string BuildDateText { get; } = AppInfo.BuildDate;
     [ObservableProperty] private string _installDate = "";
+    /// 「上次游戏」:启动时自动选中上次玩的版本(设置可关)
+    [ObservableProperty] private bool _rememberLastVersion = true;
     [ObservableProperty] private string _updateStatus = "";
+    [ObservableProperty] private bool _updateAvailable;
+    [ObservableProperty] private string _latestVersion = "";
     [ObservableProperty] private UpdateChannelOption? _selectedChannel;
 
     // ── 设置 · 动画速度 ──
@@ -365,8 +470,42 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand]
     private async Task CheckUpdateAsync()
     {
-        UpdateStatus = "正在检查更新…";
-        UpdateStatus = await _update.CheckAsync(SelectedChannel?.Channel ?? UpdateChannel.Release, VersionText);
+        UpdateStatus = Loc.T("S_Msg_CheckingUpdate");
+        var result = await _update.CheckAsync(SelectedChannel?.Channel ?? UpdateChannel.Release, VersionText);
+        UpdateStatus = result.Message;
+        UpdateAvailable = result.HasUpdate;
+        LatestVersion = result.LatestVersion;
+    }
+
+    /// 立即更新:下载全量包 → 校验 → 调度重启替换
+    [RelayCommand]
+    private async Task ApplyUpdateAsync()
+    {
+        if (!UpdateAvailable) return;
+        if (System.Windows.MessageBox.Show(Loc.F("S_Upd_Confirm", LatestVersion), Loc.T("S_ApplyUpdate"),
+                System.Windows.MessageBoxButton.YesNo, System.Windows.MessageBoxImage.Question)
+            != System.Windows.MessageBoxResult.Yes) return;
+
+        try
+        {
+            IsBusy = true;
+            var ps1 = await _update.DownloadAndStageAsync(
+                SelectedChannel?.Channel ?? UpdateChannel.Release, LatestVersion,
+                p => UpdateStatus = Loc.F("S_Upd_Downloading", p));
+            System.Windows.MessageBox.Show(Loc.T("S_Upd_Ready"), Loc.T("S_ApplyUpdate"),
+                System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(
+                "powershell.exe", $"-NoProfile -ExecutionPolicy Bypass -File \"{ps1}\" -TargetPid {Environment.ProcessId}")
+            { CreateNoWindow = true, UseShellExecute = false });
+            LogService.Info($"已调度更新到 {LatestVersion},启动器退出中");
+            System.Windows.Application.Current.Shutdown();
+        }
+        catch (Exception ex)
+        {
+            UpdateStatus = Loc.F("S_Upd_ApplyFailed", ex.Message);
+            LogService.Error("应用更新失败", ex);
+        }
+        finally { IsBusy = false; }
     }
 
     // ── 设置 · 外观(主题色 / 主页背景图) ──
@@ -467,12 +606,13 @@ public partial class MainViewModel : ObservableObject
     public async Task LoadAsync()
     {
         IsBusy = true;
+        _suppressDirty = true; // 加载期间的赋值不算"未保存改动"
         StatusText = Loc.T("S_Msg_PullingManifest");
         try
         {
             _settings = SettingsStore.Load();
             MaxMemoryMb = _settings.MaxMemoryMb <= 0 ? 4096 : _settings.MaxMemoryMb;
-            GameRoot = string.IsNullOrWhiteSpace(_settings.GameRoot) ? SettingsStore.DefaultGameRoot : _settings.GameRoot;
+            GameRoot = string.IsNullOrWhiteSpace(_settings.GameRoot) ? DetectDefaultGameRoot() : _settings.GameRoot;
             JvmArgs = _settings.JvmArgs;
             Username = string.IsNullOrWhiteSpace(_settings.Username) ? "Player" : _settings.Username;
             AutoConcurrency = _settings.DownloadConcurrency <= 0; // 0 = 自动
@@ -511,6 +651,7 @@ public partial class MainViewModel : ObservableObject
             LauncherId = $"{AppInfo.DisplayName}-{AppInfo.BuildTag}-{_settings.LauncherId}";
             LauncherIdText = $"{Loc.T("S_LauncherIdPrefix")}: {LauncherId}";
             UseTunaJdkMirror = _settings.UseTunaJdkMirror;
+            _ = ProbeTunaMirrorAsync(); // 连通性自动探测(不通过则回退官方源)
             SelectedLanguage = LauncherLanguages.FirstOrDefault(l => l.Code == _settings.LauncherLanguage) ?? LauncherLanguages[0];
             // 未自定义时用官方仓库作为反馈默认目标
             FeedbackRepo = string.IsNullOrWhiteSpace(_settings.FeedbackRepo) ? AppInfo.RepoUrl : _settings.FeedbackRepo;
@@ -520,6 +661,15 @@ public partial class MainViewModel : ObservableObject
             NewsProxy = _settings.NewsProxy;
             NewsTranslate = _settings.NewsTranslate;
             ShowNewsOnIdle = _settings.ShowNewsOnIdle;
+
+            // 「上次游戏」:自动选中上次启动的版本(可在设置里关;版本已被卸载则忽略)
+            RememberLastVersion = _settings.RememberLastVersion;
+            if (RememberLastVersion && !string.IsNullOrWhiteSpace(_settings.LastPlayedVersion))
+            {
+                var last = InstalledVersions.FirstOrDefault(v => v.Id == _settings.LastPlayedVersion);
+                if (last != null) SelectedVersion = last;
+            }
+
             await RefreshNewsAsync();
         }
         catch (Exception ex)
@@ -529,6 +679,8 @@ public partial class MainViewModel : ObservableObject
         }
         finally
         {
+            _suppressDirty = false;
+            SettingsDirty = false; // 刚加载完=没改过
             IsBusy = false;
         }
     }
@@ -767,6 +919,8 @@ public partial class MainViewModel : ObservableObject
             System.Diagnostics.Process.Start(psi);
             StatusText = Loc.F("S_Msg_Launched", SelectedDetail.Id);
             LogService.Info($"启动 {SelectedDetail.Id}(gameDir={gameDir}):{psi.FileName} {psi.Arguments}");
+            _settings.LastPlayedVersion = SelectedDetail.Id; // 记「上次游戏」
+            SettingsStore.Save(_settings);
         }
         catch (Exception ex)
         {
@@ -790,8 +944,10 @@ public partial class MainViewModel : ObservableObject
         _settings.NewsProxy = NewsProxy.Trim();
         _settings.NewsTranslate = NewsTranslate;
         _settings.FeedbackRepo = FeedbackRepo.Trim();
+        _settings.RememberLastVersion = RememberLastVersion;
         _ = RefreshNewsAsync();
         SettingsStore.Save(_settings);
+        SettingsDirty = false;
         SettingsSavedHint = Loc.F("S_Msg_Saved", DateTime.Now.ToString("HH:mm:ss"));
         RefreshCheck();
     }

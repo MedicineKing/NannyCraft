@@ -19,7 +19,7 @@
     <s:String x:Key="S_OneClickComplete">一键补全</s:String>
     <s:String x:Key="S_GameSettingsBtn">游戏设置</s:String>
     <s:String x:Key="S_SyncTitle">版本同步</s:String>
-    <s:String x:Key="S_SyncHint">隔离的版本使用独立游戏目录(设置 / 存档 / 模组独立),并且不参与同步;拖动按钮在两栏之间移动</s:String>
+    <s:String x:Key="S_SyncHint">隔离的版本使用独立游戏目录(设置 / 存档 / 模组独立),且不参与同步;点每行右侧的按钮即可在两栏之间移动</s:String>
     <s:String x:Key="S_SyncGroup">参与同步</s:String>
     <s:String x:Key="S_IsolationGroup">版本隔离(不同步)</s:String>
     <s:String x:Key="S_ToIsolate">设为隔离</s:String>
@@ -124,8 +124,9 @@
 
     <!-- 设置 · 资讯 -->
     <s:String x:Key="S_News">资讯</s:String>
-    <s:String x:Key="S_NewsSource">资讯源地址(留空 = 官方源;可填本机转发 / 镜像)</s:String>
-    <s:String x:Key="S_NewsProxy">资讯代理(可选,如 http://127.0.0.1:7890;翻译走同一代理)</s:String>
+    <s:String x:Key="S_NewsSource">资讯源地址(留空 = 官方源)</s:String>
+    <s:String x:Key="S_DlThreads">实际使用 {0} 线程</s:String>
+    <s:String x:Key="S_NewsProxy">资讯代理(可选;留空 = 直连)</s:String>
     <s:String x:Key="S_NewsTranslateToggle">自动翻译快讯(英文 → 简体中文)</s:String>
     <s:String x:Key="S_NewsShowToggle">主页未选版本时显示「今日 MC 快讯」</s:String>
     <s:String x:Key="S_FeedbackRepo">反馈仓库地址(留空 = 官方仓库 MedicineKing/NannyCraft)</s:String>
@@ -138,15 +139,42 @@
     <s:String x:Key="S_InstallDate">安装日期</s:String>
     <s:String x:Key="S_Channel">更新通道</s:String>
     <s:String x:Key="S_CheckUpdate">检查更新</s:String>
+    <s:String x:Key="S_ApplyUpdate">立即更新</s:String>
+    <s:String x:Key="S_Msg_CheckingUpdate">正在检查更新…</s:String>
+    <s:String x:Key="S_SetCat_Game">启动与游戏</s:String>
+    <s:String x:Key="S_SetCat_Look">界面与外观</s:String>
+    <s:String x:Key="S_SetCat_Isolate">版本隔离</s:String>
+    <s:String x:Key="S_SetCat_News">资讯与反馈</s:String>
+    <s:String x:Key="S_SetCat_Update">版本与更新</s:String>
+    <s:String x:Key="S_RememberLast">启动时自动选中「上次游戏」的版本</s:String>
+    <s:String x:Key="S_RememberLastHint">记住你上次启动的版本,打开启动器即可直接开始;想换随时点别的版本。</s:String>
+    <s:String x:Key="S_Upd_NoServer">[{0}] 更新服务器尚未配置 —— data/updates 就绪后填入地址即可(当前 {1})</s:String>
+    <s:String x:Key="S_Upd_Found">发现新版本 {0}(当前 {1})</s:String>
+    <s:String x:Key="S_Upd_Latest">已是最新版({0})</s:String>
+    <s:String x:Key="S_Upd_BadManifest">更新清单格式无法识别</s:String>
+    <s:String x:Key="S_Upd_Failed">检查更新失败(网络或服务器不可达)</s:String>
+    <s:String x:Key="S_Upd_ChannelEmpty">该更新通道暂时还没有可用内容</s:String>
+    <s:String x:Key="S_Upd_ApplyFailed">更新失败:{0}</s:String>
+    <s:String x:Key="S_Upd_Downloading">正在下载更新… {0}%</s:String>
+    <s:String x:Key="S_Upd_Confirm">将下载并安装 {0},完成后启动器自动重启。&#x000A;现在更新吗?</s:String>
+    <s:String x:Key="S_Upd_Ready">更新包已就绪,启动器将重启完成更新。</s:String>
 
     <!-- 关于 -->
     <s:String x:Key="S_AboutDesc">一个懒人向的 Minecraft 启动器:零配置决策、坏了自己修、附带服主与联机工具箱。</s:String>
     <s:String x:Key="S_AboutLegal">· 非官方产品,与 Mojang / Microsoft 无关联;&#x000A;· 零遥测、零数据收集,所有配置与文件都在你自己手里;&#x000A;· 启动所需的 Java 由你本机提供或自动补全(官方 javaVersion 映射)。</s:String>
     <s:String x:Key="S_AboutTech">技术栈:.NET 8 · WPF · WPF-UI(Fluent);动效遵循 Apple HIG 与 HarmonyOS 规范(150/220/350ms,支持系统减少动画)。</s:String>
     <s:String x:Key="S_HelpFeedback">帮助与反馈</s:String>
-    <s:String x:Key="S_HelpDesc">反馈会跳到 GitHub Issues:环境信息(系统 / 硬件 / 运行环境)与运行日志已自动填好,崩溃日志(若有)一并附上,提交前可自行编辑。</s:String>
+    <s:String x:Key="S_HelpDesc">遇到问题或想提建议?会打开预填好的 GitHub 页面:环境信息与日志已自动填好,提交前可改;不方便用 GitHub 的话,直接来 QQ 群反馈。非最新版会先引导更新。</s:String>
     <s:String x:Key="S_ReportBug">报告 Bug</s:String>
     <s:String x:Key="S_SuggestIdea">功能建议</s:String>
+    <s:String x:Key="S_QQFeedback">QQ 群反馈</s:String>
+    <s:String x:Key="S_Fb_NeedUpdateTitle">先更新再反馈</s:String>
+    <s:String x:Key="S_Fb_NeedUpdate">检测到新版本 {0}。&#x000A;旧版本的问题可能已被修复,建议先更新再提交反馈。&#x000A;&#x000A;现在就打开「设置 → 版本与更新」吗?</s:String>
+    <s:String x:Key="S_Fb_UpdateFirst">请先更新到最新版,再提交反馈</s:String>
+    <s:String x:Key="S_Fb_Opened">已在浏览器打开 GitHub 反馈页(环境信息与日志已自动填充,提交前可编辑)</s:String>
+    <s:String x:Key="S_Fb_OpenFailed">打开浏览器失败:{0}</s:String>
+    <s:String x:Key="S_Fb_QQNotSet">QQ 群链接尚未配置</s:String>
+    <s:String x:Key="S_OpenLogFailed">打开日志目录失败:{0}</s:String>
     <s:String x:Key="S_OpenLogFolder">打开日志目录</s:String>
     <s:String x:Key="S_LauncherIdPrefix">启动器标识</s:String>
 

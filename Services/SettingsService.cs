@@ -33,8 +33,8 @@ public sealed class LauncherSettings
     public string NewsSourceUrl { get; set; } = "";
     /// 快讯代理(如 http://127.0.0.1:7890;空 = 直连;翻译请求走同一代理)
     public string NewsProxy { get; set; } = "";
-    /// 快讯自动翻译(英文 → 简体中文)
-    public bool NewsTranslate { get; set; } = true;
+    /// 快讯自动翻译(英文 → 简体中文;界面不再暴露——翻译服务国内不可达,保留字段供以后接自建翻译)
+    public bool NewsTranslate { get; set; } = false;
     /// 启动器唯一标识的安装段(首次运行生成,反馈时自动附带)
     public string LauncherId { get; set; } = "";
     /// 生成 LauncherId 时的机器指纹:配置被整体拷到别的机器时,重生成安装段避免重复
@@ -49,6 +49,12 @@ public sealed class LauncherSettings
     public List<string> IsolatedVersions { get; set; } = new();
     /// 反馈仓库地址(空 = 用官方仓库 MedicineKing/NannyCraft)
     public string FeedbackRepo { get; set; } = "";
+    /// 更新服务器地址(空 = 用内置官方地址;测试/自建时覆盖)
+    public string UpdateBaseUrl { get; set; } = "";
+    /// 上次游戏:最近一次成功启动的版本 ID(启动器打开时自动选中;可在设置关闭)
+    public string LastPlayedVersion { get; set; } = "";
+    /// 启动时自动选中「上次游戏」的版本
+    public bool RememberLastVersion { get; set; } = true;
 }
 
 public static class SettingsStore

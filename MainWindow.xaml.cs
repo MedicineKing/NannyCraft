@@ -75,6 +75,20 @@ public partial class MainWindow : FluentWindow
             _vm.VersionKind = kind;
     }
 
+    /// 设置页分类(左列):切换五个内容面板。
+    /// 注意:首个分类 IsChecked=True 会在 InitializeComponent 期间触发,此时后面的面板字段尚未建好 → 判空直接返回(默认可见性已在 XAML 里写好)。
+    private void OnSettingsCategoryChecked(object sender, RoutedEventArgs e)
+    {
+        if (sender is not RadioButton { Uid: { Length: > 0 } uid }) return;
+        if (SetCatGame is null || SetCatLook is null || SetCatIsolate is null || SetCatNews is null || SetCatUpdate is null)
+            return;
+        SetCatGame.Visibility = uid == "Game" ? Visibility.Visible : Visibility.Collapsed;
+        SetCatLook.Visibility = uid == "Look" ? Visibility.Visible : Visibility.Collapsed;
+        SetCatIsolate.Visibility = uid == "Isolate" ? Visibility.Visible : Visibility.Collapsed;
+        SetCatNews.Visibility = uid == "News" ? Visibility.Visible : Visibility.Collapsed;
+        SetCatUpdate.Visibility = uid == "Update" ? Visibility.Visible : Visibility.Collapsed;
+    }
+
     /// 版本同步:把版本设为隔离(走 Click 事件,列表项里的 RelativeSource 命令绑定有静默失效前例)
     private void OnIsolateClick(object sender, RoutedEventArgs e)
     {

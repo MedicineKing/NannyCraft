@@ -19,7 +19,7 @@
     <s:String x:Key="S_OneClickComplete">Repair</s:String>
     <s:String x:Key="S_GameSettingsBtn">Game settings</s:String>
     <s:String x:Key="S_SyncTitle">Version sync</s:String>
-    <s:String x:Key="S_SyncHint">Isolated versions use their own game directory (settings / saves / mods stay separate) and are excluded from syncing; move versions between the two lists</s:String>
+    <s:String x:Key="S_SyncHint">Isolated versions use their own game directory (settings / saves / mods stay separate) and are excluded from syncing; click the button on each row to move it between the lists</s:String>
     <s:String x:Key="S_SyncGroup">Synced</s:String>
     <s:String x:Key="S_IsolationGroup">Isolated (not synced)</s:String>
     <s:String x:Key="S_ToIsolate">Isolate</s:String>
@@ -124,8 +124,9 @@
 
     <!-- Settings · News -->
     <s:String x:Key="S_News">News</s:String>
-    <s:String x:Key="S_NewsSource">News source (empty = official; local relay / mirror supported)</s:String>
-    <s:String x:Key="S_NewsProxy">News proxy (optional, e.g. http://127.0.0.1:7890; translation uses it too)</s:String>
+    <s:String x:Key="S_NewsSource">News source (empty = official)</s:String>
+    <s:String x:Key="S_DlThreads">Using {0} threads</s:String>
+    <s:String x:Key="S_NewsProxy">News proxy (optional; empty = direct)</s:String>
     <s:String x:Key="S_NewsTranslateToggle">Auto-translate news into Chinese</s:String>
     <s:String x:Key="S_NewsShowToggle">Show MC news when no version is selected</s:String>
     <s:String x:Key="S_FeedbackRepo">Feedback repo (empty = official: MedicineKing/NannyCraft)</s:String>
@@ -138,15 +139,42 @@
     <s:String x:Key="S_InstallDate">Install date</s:String>
     <s:String x:Key="S_Channel">Update channel</s:String>
     <s:String x:Key="S_CheckUpdate">Check for updates</s:String>
+    <s:String x:Key="S_ApplyUpdate">Update now</s:String>
+    <s:String x:Key="S_Msg_CheckingUpdate">Checking for updates…</s:String>
+    <s:String x:Key="S_SetCat_Game">Startup &amp; Game</s:String>
+    <s:String x:Key="S_SetCat_Look">Look &amp; Feel</s:String>
+    <s:String x:Key="S_SetCat_Isolate">Isolation</s:String>
+    <s:String x:Key="S_SetCat_News">News &amp; Feedback</s:String>
+    <s:String x:Key="S_SetCat_Update">Version &amp; Updates</s:String>
+    <s:String x:Key="S_RememberLast">Auto-select your last played version on startup</s:String>
+    <s:String x:Key="S_RememberLastHint">Remembers the version you launched last so you can start right away — switch anytime from the version list.</s:String>
+    <s:String x:Key="S_Upd_NoServer">[{0}] Update server is not configured yet (current {1})</s:String>
+    <s:String x:Key="S_Upd_Found">New version {0} is available (current {1})</s:String>
+    <s:String x:Key="S_Upd_Latest">You're on the latest version ({0})</s:String>
+    <s:String x:Key="S_Upd_BadManifest">Unrecognized update manifest format</s:String>
+    <s:String x:Key="S_Upd_Failed">Update check failed (network or server unreachable)</s:String>
+    <s:String x:Key="S_Upd_ChannelEmpty">This channel has no releases yet</s:String>
+    <s:String x:Key="S_Upd_ApplyFailed">Update failed: {0}</s:String>
+    <s:String x:Key="S_Upd_Downloading">Downloading update… {0}%</s:String>
+    <s:String x:Key="S_Upd_Confirm">Download and install {0}?&#x000A;The launcher will restart automatically when done.</s:String>
+    <s:String x:Key="S_Upd_Ready">Update staged — the launcher will restart now to finish.</s:String>
 
     <!-- About -->
     <s:String x:Key="S_AboutDesc">A lazy-friendly Minecraft launcher: zero-config decisions, self-healing, plus toolboxes for server owners and multiplayer.</s:String>
     <s:String x:Key="S_AboutLegal">· Unofficial product, not affiliated with Mojang / Microsoft;&#x000A;· Zero telemetry, zero data collection — everything stays on your machine;&#x000A;· Java is provided by your system or fetched automatically (official javaVersion mapping).</s:String>
     <s:String x:Key="S_AboutTech">Built with .NET 8 · WPF · WPF-UI (Fluent); motion follows Apple HIG / HarmonyOS specs (150/220/350 ms, respects reduce-motion).</s:String>
     <s:String x:Key="S_HelpFeedback">Help &amp; feedback</s:String>
-    <s:String x:Key="S_HelpDesc">Opens a prefilled GitHub issue with your environment and logs (crash log included when present). You can edit everything before submitting.</s:String>
+    <s:String x:Key="S_HelpDesc">Bug or idea? Opens a prefilled GitHub issue: environment and logs are attached automatically and editable before submitting. Can't reach GitHub? Join our QQ group instead. Outdated versions are asked to update first.</s:String>
     <s:String x:Key="S_ReportBug">Report a bug</s:String>
     <s:String x:Key="S_SuggestIdea">Suggest a feature</s:String>
+    <s:String x:Key="S_QQFeedback">QQ group</s:String>
+    <s:String x:Key="S_Fb_NeedUpdateTitle">Update first</s:String>
+    <s:String x:Key="S_Fb_NeedUpdate">A new version {0} is available.&#x000A;Your issue may already be fixed, so please update first.&#x000A;&#x000A;Open Settings → Updates now?</s:String>
+    <s:String x:Key="S_Fb_UpdateFirst">Please update to the latest version first, then submit feedback</s:String>
+    <s:String x:Key="S_Fb_Opened">Opened the prefilled GitHub issue page in your browser (environment and logs filled in — edit before submitting).</s:String>
+    <s:String x:Key="S_Fb_OpenFailed">Failed to open browser: {0}</s:String>
+    <s:String x:Key="S_Fb_QQNotSet">QQ group link is not configured yet</s:String>
+    <s:String x:Key="S_OpenLogFailed">Failed to open log folder: {0}</s:String>
     <s:String x:Key="S_OpenLogFolder">Open log folder</s:String>
     <s:String x:Key="S_LauncherIdPrefix">Launcher ID</s:String>
 

@@ -15,44 +15,63 @@ public static class FeedbackService
         var title = kind == FeedbackKind.Bug ? "[Bug] " : "[建议] ";
         var labels = kind == FeedbackKind.Bug ? "bug" : "enhancement";
 
-        var body = new StringBuilder();
+        var head = new StringBuilder();
         if (kind == FeedbackKind.Bug)
         {
-            body.AppendLine("### 问题描述");
-            body.AppendLine("<!-- 发生了什么、期望是什么 -->");
-            body.AppendLine();
-            body.AppendLine("### 复现步骤");
-            body.AppendLine("1. ");
-            body.AppendLine();
+            head.AppendLine("### 问题描述");
+            head.AppendLine("<!-- 发生了什么、期望是什么 -->");
+            head.AppendLine();
+            head.AppendLine("### 复现步骤");
+            head.AppendLine("1. ");
+            head.AppendLine();
         }
         else
         {
-            body.AppendLine("### 想加的功能 / 改进");
-            body.AppendLine("<!-- 说说你的想法 -->");
-            body.AppendLine();
+            head.AppendLine("### 想加的功能 / 改进");
+            head.AppendLine("<!-- 说说你的想法 -->");
+            head.AppendLine();
         }
 
-        body.AppendLine("### 环境信息(自动填充,可修改)");
-        body.AppendLine(BuildEnvironment(launcherId, javaText));
+        head.AppendLine("### 环境信息(自动填充,可修改)");
+        head.AppendLine(BuildEnvironment(launcherId, javaText));
 
-        if (kind == FeedbackKind.Bug)
+        // GitHub 对超长 URL 直接 414(HTTP/2 下浏览器表现为协议错误)
+        // → 正文按"编码后长度"预算裁剪:先舍崩溃段,再逐步缩短日志
+        const int MaxEncodedBody = 5000;
+        var logText = kind == FeedbackKind.Bug ? LogService.Tail() : null;
+        var crashText = kind == FeedbackKind.Bug ? LogService.CrashTail() : null;
+
+        var body = Compose(head.ToString(), logText, crashText);
+        if (crashText != null && Uri.EscapeDataString(body).Length > MaxEncodedBody)
+            body = Compose(head.ToString(), logText, null);
+        while (Uri.EscapeDataString(body).Length > MaxEncodedBody && logText is { Length: > 300 })
         {
-            body.AppendLine("### 运行日志(自动截取尾部)");
-            body.AppendLine("```log");
-            body.AppendLine(LogService.Tail());
-            body.AppendLine("```");
-
-            if (LogService.CrashTail() is { Length: > 0 } crash)
-            {
-                body.AppendLine("### 崩溃日志(自动附带)");
-                body.AppendLine("```log");
-                body.AppendLine(crash);
-                body.AppendLine("```");
-            }
+            logText = logText[^(logText.Length * 3 / 4)..]; // 每次保留最新 3/4
+            body = Compose(head.ToString(), logText, null);
         }
 
         var baseUrl = repoUrl.TrimEnd('/');
-        return $"{baseUrl}/issues/new?title={Uri.EscapeDataString(title)}&labels={Uri.EscapeDataString(labels)}&body={Uri.EscapeDataString(body.ToString())}";
+        return $"{baseUrl}/issues/new?title={Uri.EscapeDataString(title)}&labels={Uri.EscapeDataString(labels)}&body={Uri.EscapeDataString(body)}";
+    }
+
+    private static string Compose(string head, string? logText, string? crashText)
+    {
+        var sb = new StringBuilder(head);
+        if (!string.IsNullOrEmpty(logText))
+        {
+            sb.AppendLine("### 运行日志(自动截取尾部)");
+            sb.AppendLine("```log");
+            sb.AppendLine(logText);
+            sb.AppendLine("```");
+        }
+        if (!string.IsNullOrEmpty(crashText))
+        {
+            sb.AppendLine("### 崩溃日志(自动附带)");
+            sb.AppendLine("```log");
+            sb.AppendLine(crashText);
+            sb.AppendLine("```");
+        }
+        return sb.ToString();
     }
 
     /// 环境信息(markdown 列表):启动器标识 / 系统 / CPU / 内存 / GPU / 运行环境 / Java
